@@ -1,0 +1,210 @@
+'use client'
+
+import Link from 'next/link'
+import { useSession, signOut } from 'next-auth/react'
+import { useState } from 'react'
+import { 
+  Menu, 
+  X, 
+  User, 
+  LogOut, 
+  Settings, 
+  Music, 
+  ListMusic, 
+  Heart, 
+  Search,
+  Shield
+} from 'lucide-react'
+
+export function Header() {
+  const { data: session, status } = useSession()
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
+  
+  const isAdmin = session?.user?.role === 'admin'
+  
+  return (
+    <header className="fixed top-0 left-0 right-0 z-40 glass border-b border-aviva-gray safe-top">
+      <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2">
+          <svg width="93" height="34" viewBox="0 0 93 34" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-8 w-auto">
+            <path d="M68.2315 0.118011C68.0163 0.118011 67.9399 0.201314 67.8705 0.409569C66.5932 4.18593 65.302 7.96229 64.0178 11.7387C63.8512 12.2385 63.6776 12.7383 63.4902 13.2797C63.4416 13.1478 63.4139 13.0784 63.3861 13.0021C62.3934 10.0796 61.4007 7.15704 60.4011 4.22758C59.9638 2.94334 59.5334 1.6591 59.0891 0.381801C59.0544 0.284616 58.9433 0.138837 58.8739 0.138837C57.5411 0.124953 56.2082 0.124953 54.8337 0.124953C54.8684 0.229081 54.8893 0.298499 54.917 0.367918C57.1731 6.49756 59.4292 12.6272 61.6715 18.7569C61.7409 18.9512 61.8311 18.9998 62.0116 18.9998C62.9488 18.9929 63.8859 18.9859 64.823 18.9998C65.0313 18.9998 65.1285 18.9373 65.2118 18.7152C67.4471 12.6133 69.6893 6.52533 71.9315 0.430394C71.9662 0.34015 71.987 0.249906 72.0287 0.124953C70.7306 0.124953 69.4741 0.131895 68.2246 0.124953L68.2315 0.118011Z" fill="#f2f0f0"/>
+            <path d="M34.2166 0.13883C34.1402 0.13883 34.0361 0.284609 34.0014 0.388737C32.7588 4.01932 31.5231 7.65684 30.2875 11.2944C30.0653 11.94 29.8432 12.5856 29.6072 13.2867C29.5447 13.1201 29.503 13.0159 29.4683 12.9049C28.0522 8.73977 26.6361 4.58161 25.2269 0.416504C25.1505 0.194365 25.0603 0.124947 24.8451 0.124947C24.0745 0.13883 23.297 0.124947 22.5265 0.124947H20.9576C20.9993 0.256842 21.0271 0.360969 21.0687 0.465097C21.8254 2.51294 22.5751 4.56772 23.3318 6.61557C24.8173 10.6557 26.3029 14.6959 27.7884 18.743C27.8578 18.9443 27.955 18.9998 28.1424 18.9998C29.0796 18.9859 30.0167 18.9859 30.9539 18.9998C31.1552 18.9998 31.2524 18.9443 31.3288 18.736C33.564 12.6341 35.8132 6.53227 38.0554 0.430388C38.0901 0.340144 38.1109 0.2499 38.1526 0.131888C36.8128 0.131888 35.5147 0.131888 34.2166 0.145772V0.13883Z" fill="#f2f0f0"/>
+            <path d="M17.0354 14.8694C15.1334 9.98932 13.2313 5.1092 11.3362 0.229088C11.2668 0.0555424 11.1904 7.62939e-06 11.0168 7.62939e-06C10.0033 0.00694947 8.98983 0.0138913 7.97632 7.62939e-06C7.79583 7.62939e-06 7.72642 0.069426 7.657 0.23603C5.27595 6.36568 2.8949 12.4814 0.513844 18.6041C0.486077 18.6805 0.465251 18.7569 0.430542 18.854C0.527728 18.854 0.604088 18.8679 0.680448 18.8679C1.79808 18.8679 2.91572 18.8679 4.03336 18.8679C4.22079 18.8679 4.29715 18.8055 4.36657 18.618C5.35231 15.9593 6.34499 13.3075 7.33767 10.6557C8.03186 8.78838 8.72604 6.92797 9.44799 4.99813C9.50353 5.13003 9.53824 5.20639 9.566 5.27581C11.2182 9.69776 12.8703 14.1197 14.5155 18.5486C14.5988 18.7707 14.696 18.8749 14.939 18.8679C16.0566 18.8471 17.1743 18.861 18.2919 18.861H18.5904C18.5349 18.7152 18.5002 18.6111 18.4585 18.507C17.9865 17.2921 17.5075 16.0773 17.0354 14.8625V14.8694Z" fill="#f2f0f0"/>
+            <path d="M92.4933 18.6041C90.1053 12.4745 87.7173 6.34484 85.3363 0.215197C85.2738 0.0485929 85.1905 0 85.0308 0C84.0243 0.00694184 83.0177 0.0138837 82.0111 0C81.8168 0 81.7265 0.0624766 81.6502 0.256848C79.2761 6.37261 76.8881 12.4814 74.507 18.5972C74.4723 18.6736 74.4584 18.7638 74.4237 18.8679C75.6871 18.8679 76.9089 18.8679 78.1237 18.861C78.2001 18.861 78.3042 18.736 78.3389 18.6458C79.5676 15.3692 80.7894 12.0857 82.0181 8.8092C82.4832 7.55272 82.9552 6.29625 83.4412 4.98424C83.5661 5.31745 83.6702 5.60207 83.7744 5.88668C85.3571 10.1281 86.9398 14.3696 88.5226 18.618C88.592 18.8124 88.6822 18.8818 88.8766 18.8749C89.543 18.861 90.2164 18.8749 90.8897 18.8749H92.5697C92.535 18.7707 92.5141 18.6874 92.4864 18.618L92.4933 18.6041Z" fill="#f2f0f0"/>
+            <path d="M48.3777 0.13884H44.6292V18.8471H48.3777V0.13884Z" fill="#f2f0f0"/>
+            <path d="M8.07336 32.9599L6.18518 25.6848L4.26923 32.9599H2.75591L0 23.0122H1.70769L3.56116 30.2734L5.33133 23.0122H7.01126L8.88556 30.2734L10.7251 23.0122H12.3565L9.62833 32.9599H8.07336Z" fill="#F2BC15"/>
+            <path d="M17.7988 28.0797C17.7988 24.7129 19.4926 22.6859 22.4707 22.6859C25.4487 22.6859 27.1009 24.706 27.1009 28.1214C27.1009 31.5368 25.421 33.3 22.4915 33.3C19.5621 33.3 17.8058 31.4257 17.8058 28.0728L17.7988 28.0797ZM25.5112 28.0659C25.5112 25.5529 24.4352 24.109 22.4568 24.109C20.4784 24.109 19.3885 25.546 19.3885 28.0936C19.3885 30.6413 20.527 31.9394 22.429 31.9394C24.3311 31.9394 25.5112 30.7593 25.5112 28.0589V28.0659Z" fill="#F2BC15"/>
+            <path d="M39.8809 32.9599V30.3844C39.8809 29.3501 39.4921 28.8711 38.0691 28.8711H35.3617V32.9599H33.8068V23.0122H38.7216C40.5334 23.0122 41.6996 24.1923 41.6996 25.7959C41.6996 26.976 41.0679 27.9062 39.9781 28.1908C41.0402 28.413 41.4428 28.9683 41.4428 30.1831V32.9529H39.8878L39.8809 32.9599ZM38.3537 27.573C39.6865 27.573 40.1933 26.851 40.1933 25.9555C40.1933 24.9976 39.6379 24.352 38.4578 24.352H35.3548V27.573H38.3537Z" fill="#F2BC15"/>
+            <path d="M54.1672 25.9555C54.1047 24.6852 53.3411 24.0535 51.8139 24.0535C50.3769 24.0535 49.6689 24.6088 49.6689 25.5529C49.6689 26.2541 50.0576 26.6011 50.6407 26.858C51.6889 27.3092 52.8552 27.2745 53.9936 27.6702C55.0835 28.045 55.9373 28.7462 55.9373 30.2456C55.9373 32.224 54.4726 33.3139 52.0707 33.3139C49.6689 33.3139 47.9959 32.2379 47.9542 29.9888H49.4953C49.5231 31.2938 50.5435 32.0227 52.0707 32.0227C53.5077 32.0227 54.3754 31.3771 54.3754 30.2873C54.3754 29.6556 54.0908 29.2252 53.3272 28.9267C52.3831 28.5518 51.2169 28.5657 50.0507 28.1353C48.7803 27.6563 48.1902 26.8927 48.1902 25.664C48.1902 23.9285 49.3704 22.6998 51.7514 22.6998C54.1325 22.6998 55.6319 23.9702 55.6597 25.9625H54.1463L54.1672 25.9555Z" fill="#F2BC15"/>
+            <path d="M68.7799 32.9599V28.3019H64.1358V32.9599H62.5322V23.0122H64.1358V26.9482H68.7799V23.0122H70.3973V32.9599H68.7799Z" fill="#F2BC15"/>
+            <path d="M77.2001 32.9599V23.0122H78.8036V32.9599H77.2001Z" fill="#F2BC15"/>
+            <path d="M85.6 32.9599V23.0122H89.897C91.7852 23.0122 93 24.4353 93 26.2193C93 28.0034 91.7852 29.3015 89.897 29.3015H87.2035V32.9529H85.6V32.9599ZM89.661 28.0034C90.966 28.0034 91.5908 27.2398 91.5908 26.1916C91.5908 25.1433 90.9591 24.352 89.661 24.352H87.2035V28.0034H89.661Z" fill="#F2BC15"/>
+          </svg>
+        </Link>
+        
+        {/* Desktop Nav */}
+        <nav className="hidden md:flex items-center gap-6">
+          <Link 
+            href="/canciones" 
+            className="flex items-center gap-2 text-aviva-text hover:text-aviva-gold transition-colors"
+          >
+            <Music size={18} />
+            <span>Canciones</span>
+          </Link>
+          <Link 
+            href="/listas" 
+            className="flex items-center gap-2 text-aviva-text hover:text-aviva-gold transition-colors"
+          >
+            <ListMusic size={18} />
+            <span>Mis Listas</span>
+          </Link>
+          <Link 
+            href="/favoritos" 
+            className="flex items-center gap-2 text-aviva-text hover:text-aviva-gold transition-colors"
+          >
+            <Heart size={18} />
+            <span>Favoritos</span>
+          </Link>
+          <Link 
+            href="/buscar" 
+            className="flex items-center gap-2 text-aviva-text hover:text-aviva-gold transition-colors"
+          >
+            <Search size={18} />
+            <span>Buscar</span>
+          </Link>
+        </nav>
+        
+        {/* User Menu */}
+        <div className="flex items-center gap-3">
+          {status === 'loading' ? (
+            <div className="w-10 h-10 rounded-full skeleton" />
+          ) : session ? (
+            <div className="relative">
+              <button 
+                onClick={() => setUserMenuOpen(!userMenuOpen)}
+                className="flex items-center gap-2 p-1 rounded-full hover:ring-2 hover:ring-aviva-gold/50 transition-all"
+              >
+                {session.user?.image ? (
+                  <img 
+                    src={session.user.image} 
+                    alt={session.user.name || ''} 
+                    className="w-9 h-9 rounded-full border-2 border-aviva-gold"
+                  />
+                ) : (
+                  <div className="w-9 h-9 rounded-full bg-aviva-gold flex items-center justify-center">
+                    <User size={18} className="text-aviva-black" />
+                  </div>
+                )}
+              </button>
+              
+              {userMenuOpen && (
+                <>
+                  <div 
+                    className="fixed inset-0 z-40" 
+                    onClick={() => setUserMenuOpen(false)} 
+                  />
+                  <div className="absolute right-0 top-full mt-2 w-56 py-2 bg-aviva-dark border border-aviva-gray rounded-xl shadow-xl z-50 animate-slide-down">
+                    <div className="px-4 py-2 border-b border-aviva-gray">
+                      <p className="font-medium text-aviva-text truncate">{session.user?.name}</p>
+                      <p className="text-sm text-aviva-text-muted truncate">{session.user?.email}</p>
+                      {isAdmin && (
+                        <span className="inline-flex items-center gap-1 mt-1 text-xs text-aviva-gold">
+                          <Shield size={12} />
+                          Administrador
+                        </span>
+                      )}
+                    </div>
+                    
+                    {isAdmin && (
+                      <Link 
+                        href="/admin"
+                        className="flex items-center gap-3 px-4 py-2 hover:bg-aviva-gray transition-colors"
+                        onClick={() => setUserMenuOpen(false)}
+                      >
+                        <Settings size={18} />
+                        <span>Panel Admin</span>
+                      </Link>
+                    )}
+                    
+                    <Link 
+                      href="/perfil"
+                      className="flex items-center gap-3 px-4 py-2 hover:bg-aviva-gray transition-colors"
+                      onClick={() => setUserMenuOpen(false)}
+                    >
+                      <User size={18} />
+                      <span>Mi Perfil</span>
+                    </Link>
+                    
+                    <button 
+                      onClick={() => signOut()}
+                      className="w-full flex items-center gap-3 px-4 py-2 hover:bg-aviva-gray transition-colors text-red-400"
+                    >
+                      <LogOut size={18} />
+                      <span>Cerrar Sesión</span>
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          ) : (
+            <Link 
+              href="/login"
+              className="btn-primary text-sm"
+            >
+              Iniciar Sesión
+            </Link>
+          )}
+          
+          {/* Mobile Menu Button */}
+          <button 
+            className="md:hidden p-2 hover:bg-aviva-gray rounded-lg transition-colors"
+            onClick={() => setMenuOpen(!menuOpen)}
+          >
+            {menuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
+      </div>
+      
+      {/* Mobile Nav */}
+      {menuOpen && (
+        <nav className="md:hidden border-t border-aviva-gray bg-aviva-dark animate-slide-down">
+          <Link 
+            href="/canciones" 
+            className="flex items-center gap-3 px-4 py-3 hover:bg-aviva-gray transition-colors"
+            onClick={() => setMenuOpen(false)}
+          >
+            <Music size={20} />
+            <span>Canciones</span>
+          </Link>
+          <Link 
+            href="/listas" 
+            className="flex items-center gap-3 px-4 py-3 hover:bg-aviva-gray transition-colors"
+            onClick={() => setMenuOpen(false)}
+          >
+            <ListMusic size={20} />
+            <span>Mis Listas</span>
+          </Link>
+          <Link 
+            href="/favoritos" 
+            className="flex items-center gap-3 px-4 py-3 hover:bg-aviva-gray transition-colors"
+            onClick={() => setMenuOpen(false)}
+          >
+            <Heart size={20} />
+            <span>Favoritos</span>
+          </Link>
+          <Link 
+            href="/buscar" 
+            className="flex items-center gap-3 px-4 py-3 hover:bg-aviva-gray transition-colors"
+            onClick={() => setMenuOpen(false)}
+          >
+            <Search size={20} />
+            <span>Buscar</span>
+          </Link>
+        </nav>
+      )}
+    </header>
+  )
+}
+
