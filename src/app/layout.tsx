@@ -1,15 +1,16 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Archivo } from "next/font/google";
 import "./globals.css";
 import { SessionProvider } from "@/components/providers/SessionProvider";
 import { ToastProvider } from "@/components/ui/Toast";
 import { Header } from "@/components/ui/Header";
 import { BottomNav } from "@/components/ui/BottomNav";
 
-const inter = Inter({ 
+const archivo = Archivo({
   subsets: ["latin"],
   display: 'swap',
-  variable: '--font-inter'
+  variable: '--font-archivo',
+  weight: ['400', '500', '600', '700', '800', '900']
 });
 
 export const metadata: Metadata = {
@@ -41,8 +42,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className={inter.variable}>
-      <body className="antialiased">
+    <html lang="es" className={archivo.variable}>
+      <body className={`${archivo.className} antialiased bg-aviva-black text-aviva-text`}>
         <SessionProvider>
           <ToastProvider>
             <Header />

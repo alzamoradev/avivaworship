@@ -3,26 +3,51 @@
 import { signIn, useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState, Suspense } from 'react'
-import { Chrome } from 'lucide-react'
+import { Chrome, Mail, Lock, Eye, EyeOff } from 'lucide-react'
 
 function LoginContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get('callbackUrl') || '/'
+
   const [loading, setLoading] = useState(false)
-  
+  const [googleLoading, setGoogleLoading] = useState(false)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [error, setError] = useState('')
+
   useEffect(() => {
     if (status === 'authenticated') {
       router.push(callbackUrl)
     }
   }, [status, router, callbackUrl])
-  
+
   const handleGoogleSignIn = async () => {
-    setLoading(true)
+    setGoogleLoading(true)
     await signIn('google', { callbackUrl })
   }
-  
+
+  const handleCredentialsSignIn = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+
+    const result = await signIn('credentials', {
+      email,
+      password,
+      redirect: false,
+    })
+
+    if (result?.error) {
+      setError('Email o contraseña incorrectos')
+      setLoading(false)
+    } else {
+      router.push(callbackUrl)
+    }
+  }
+
   if (status === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -30,14 +55,14 @@ function LoginContent() {
       </div>
     )
   }
-  
+
   return (
     <div className="min-h-screen flex items-center justify-center px-4 -mt-16">
       {/* Background */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-aviva-gold/5 rounded-full blur-3xl" />
       </div>
-      
+
       <div className="relative w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
@@ -62,15 +87,86 @@ function LoginContent() {
             Inicia sesión para acceder al cancionero
           </p>
         </div>
-        
+
         {/* Login Card */}
         <div className="bg-aviva-dark-lighter border border-aviva-gray rounded-2xl p-8">
+          {/* Credentials Form */}
+          <form onSubmit={handleCredentialsSignIn} className="space-y-4 mb-6">
+            <div>
+              <label className="block text-sm font-medium text-aviva-text-muted mb-2">
+                Email
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-aviva-text-muted" size={18} />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="tu@email.com"
+                  className="input-aviva pl-12"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-aviva-text-muted mb-2">
+                Contraseña
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-aviva-text-muted" size={18} />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="input-aviva pl-12 pr-12"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-aviva-text-muted hover:text-aviva-text"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </div>
+
+            {error && (
+              <p className="text-red-500 text-sm">{error}</p>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? (
+                <div className="w-5 h-5 border-2 border-aviva-black border-t-transparent rounded-full animate-spin mx-auto" />
+              ) : (
+                'Iniciar Sesión'
+              )}
+            </button>
+          </form>
+
+          {/* Divider */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-aviva-gray"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-4 bg-aviva-dark-lighter text-aviva-text-muted">o continúa con</span>
+            </div>
+          </div>
+
+          {/* Google Button */}
           <button
             onClick={handleGoogleSignIn}
-            disabled={loading}
+            disabled={googleLoading}
             className="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-100 text-gray-900 font-semibold py-4 px-6 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? (
+            {googleLoading ? (
               <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
             ) : (
               <>
@@ -79,14 +175,8 @@ function LoginContent() {
               </>
             )}
           </button>
-          
-          <div className="mt-6 text-center">
-            <p className="text-sm text-aviva-text-muted">
-              Al iniciar sesión, aceptas nuestros términos de uso
-            </p>
-          </div>
         </div>
-        
+
         {/* Info */}
         <div className="mt-8 text-center">
           <p className="text-sm text-aviva-text-muted">
@@ -111,4 +201,3 @@ export default function LoginPage() {
     </Suspense>
   )
 }
-
