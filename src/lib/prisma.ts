@@ -6,11 +6,14 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }
 
-function createPrismaClient() {
+function createPrismaClient(): PrismaClient {
   const connectionString = process.env.DATABASE_URL
 
+  // During build time, DATABASE_URL might not be available
+  // Return a dummy client that will be replaced at runtime
   if (!connectionString) {
-    throw new Error('DATABASE_URL environment variable is not set')
+    console.warn('DATABASE_URL not set, using placeholder client')
+    return new PrismaClient()
   }
 
   const pool = new Pool({ connectionString })
