@@ -1,21 +1,52 @@
 @import "tailwindcss";
 
-:root {
+/* Tailwind 4: Theme configuration */
+@theme {
   /* Colores principales AVIVA */
-  --aviva-gold: #F2BC15;
-  --aviva-gold-light: #f5cb4a;
-  --aviva-gold-dark: #d9a813;
-  --aviva-black: #0a0a0a;
-  --aviva-dark: #141414;
-  --aviva-dark-lighter: #1a1a1a;
-  --aviva-gray: #262626;
-  --aviva-gray-light: #3a3a3a;
-  --aviva-text: #f2f0f0;
-  --aviva-text-muted: #888888;
-  
-  /* Gradientes */
-  --gradient-gold: linear-gradient(135deg, var(--aviva-gold) 0%, var(--aviva-gold-light) 100%);
-  --gradient-dark: linear-gradient(180deg, var(--aviva-dark) 0%, var(--aviva-black) 100%);
+  --color-aviva-gold: #F2BC15;
+  --color-aviva-gold-light: #f5cb4a;
+  --color-aviva-gold-dark: #d9a813;
+  --color-aviva-black: #0a0a0a;
+  --color-aviva-dark: #141414;
+  --color-aviva-dark-lighter: #1a1a1a;
+  --color-aviva-gray: #262626;
+  --color-aviva-gray-light: #3a3a3a;
+  --color-aviva-text: #f2f0f0;
+  --color-aviva-text-muted: #888888;
+
+  /* Fonts */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Animations */
+  --animate-fade-in: fadeIn 0.3s ease-out;
+  --animate-slide-up: slideUp 0.4s ease-out;
+  --animate-slide-down: slideDown 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* CSS Variables for non-Tailwind usage */
+:root {
+  --gradient-gold: linear-gradient(135deg, #F2BC15 0%, #f5cb4a 100%);
+  --gradient-dark: linear-gradient(180deg, #141414 0%, #0a0a0a 100%);
 }
 
 * {
@@ -24,43 +55,42 @@
   margin: 0;
 }
 
-html,
-body {
+html, body {
   max-width: 100vw;
   overflow-x: hidden;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
 }
 
 body {
-  background: var(--aviva-black);
-  color: var(--aviva-text);
+  background: #0a0a0a;
+  color: #f2f0f0;
   min-height: 100vh;
   min-height: 100dvh;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* Scrollbar personalizada */
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--aviva-dark);
+  background: #141414;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--aviva-gray-light);
+  background: #3a3a3a;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--aviva-gold);
+  background: #F2BC15;
 }
 
-/* Selección de texto */
+/* Selection */
 ::selection {
-  background: var(--aviva-gold);
-  color: var(--aviva-black);
+  background: #F2BC15;
+  color: #0a0a0a;
 }
 
 /* Links */
@@ -69,75 +99,13 @@ a {
   text-decoration: none;
 }
 
-/* Focus visible para accesibilidad */
+/* Focus */
 :focus-visible {
-  outline: 2px solid var(--aviva-gold);
+  outline: 2px solid #F2BC15;
   outline-offset: 2px;
 }
 
-/* Animaciones */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-out;
-}
-
-.animate-slide-up {
-  animation: slideUp 0.4s ease-out;
-}
-
-.animate-slide-down {
-  animation: slideDown 0.4s ease-out;
-}
-
-/* Utilidades personalizadas */
+/* Glass effects */
 .glass {
   background: rgba(26, 26, 26, 0.8);
   backdrop-filter: blur(20px);
@@ -150,35 +118,19 @@ a {
   -webkit-backdrop-filter: blur(20px);
 }
 
+/* Gradient text */
 .gradient-text {
-  background: var(--gradient-gold);
+  background: linear-gradient(135deg, #F2BC15 0%, #f5cb4a 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-.gradient-border {
-  position: relative;
-}
-
-.gradient-border::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  background: var(--gradient-gold);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-}
-
-/* Estilos para acordes */
+/* Chords styling */
 .chord {
   display: inline-block;
   font-weight: 700;
-  color: var(--aviva-gold);
+  color: #F2BC15;
   font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -201,7 +153,6 @@ a {
   line-height: 1.8;
 }
 
-/* Mobile optimizations */
 @media (max-width: 640px) {
   .lyrics-line {
     font-size: 1rem;
@@ -209,12 +160,11 @@ a {
   }
 }
 
-/* Safe area para dispositivos con notch */
+/* Safe areas */
 @supports (padding: env(safe-area-inset-bottom)) {
   .safe-bottom {
     padding-bottom: env(safe-area-inset-bottom);
   }
-  
   .safe-top {
     padding-top: env(safe-area-inset-top);
   }
@@ -222,34 +172,29 @@ a {
 
 /* Skeleton loading */
 .skeleton {
-  background: linear-gradient(
-    90deg,
-    var(--aviva-gray) 25%,
-    var(--aviva-gray-light) 50%,
-    var(--aviva-gray) 75%
-  );
+  background: linear-gradient(90deg, #262626 25%, #3a3a3a 50%, #262626 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
 
-/* Toast notifications */
+/* Toast */
 .toast {
   position: fixed;
   bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
   padding: 12px 24px;
-  background: var(--aviva-gray);
+  background: #262626;
   border-radius: 12px;
-  border: 1px solid var(--aviva-gray-light);
+  border: 1px solid #3a3a3a;
   z-index: 1000;
   animation: slideUp 0.3s ease-out;
 }
 
-/* Botón primario estilo AVIVA */
+/* Buttons */
 .btn-primary {
-  background: var(--aviva-gold);
-  color: var(--aviva-black);
+  background: #F2BC15;
+  color: #0a0a0a;
   font-weight: 600;
   padding: 12px 24px;
   border-radius: 12px;
@@ -259,7 +204,7 @@ a {
 }
 
 .btn-primary:hover {
-  background: var(--aviva-gold-light);
+  background: #f5cb4a;
   transform: translateY(-2px);
   box-shadow: 0 4px 20px rgba(242, 188, 21, 0.3);
 }
@@ -268,30 +213,29 @@ a {
   transform: translateY(0);
 }
 
-/* Botón secundario */
 .btn-secondary {
   background: transparent;
-  color: var(--aviva-text);
+  color: #f2f0f0;
   font-weight: 600;
   padding: 12px 24px;
   border-radius: 12px;
-  border: 1px solid var(--aviva-gray-light);
+  border: 1px solid #3a3a3a;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .btn-secondary:hover {
-  border-color: var(--aviva-gold);
-  color: var(--aviva-gold);
+  border-color: #F2BC15;
+  color: #F2BC15;
 }
 
-/* Input estilo AVIVA */
+/* Input */
 .input-aviva {
-  background: var(--aviva-dark-lighter);
-  border: 1px solid var(--aviva-gray);
+  background: #1a1a1a;
+  border: 1px solid #262626;
   border-radius: 12px;
   padding: 12px 16px;
-  color: var(--aviva-text);
+  color: #f2f0f0;
   font-size: 1rem;
   width: 100%;
   transition: all 0.2s ease;
@@ -299,25 +243,25 @@ a {
 
 .input-aviva:focus {
   outline: none;
-  border-color: var(--aviva-gold);
+  border-color: #F2BC15;
   box-shadow: 0 0 0 3px rgba(242, 188, 21, 0.1);
 }
 
 .input-aviva::placeholder {
-  color: var(--aviva-text-muted);
+  color: #888888;
 }
 
-/* Card estilo AVIVA */
+/* Card */
 .card-aviva {
-  background: var(--aviva-dark-lighter);
-  border: 1px solid var(--aviva-gray);
+  background: #1a1a1a;
+  border: 1px solid #262626;
   border-radius: 16px;
   padding: 20px;
   transition: all 0.3s ease;
 }
 
 .card-aviva:hover {
-  border-color: var(--aviva-gold);
+  border-color: #F2BC15;
   transform: translateY(-4px);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
