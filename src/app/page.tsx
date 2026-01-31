@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import Image from 'next/image'
 import { useSession } from 'next-auth/react'
 import { useEffect, useState } from 'react'
 import { Search, Music, ListMusic, Heart, ChevronRight, Sparkles, ArrowRight } from 'lucide-react'
@@ -63,12 +62,10 @@ export default function HomePage() {
       <section className="relative min-h-[70vh] flex items-center justify-center overflow-hidden">
         {/* Background Image */}
         <div className="absolute inset-0">
-          <Image
+          <img
             src="/hero-worship.webp"
             alt="Worship"
-            fill
-            className="object-cover object-center"
-            priority
+            className="w-full h-full object-cover object-center"
           />
           {/* Gradient Overlay */}
           <div className="absolute inset-0 bg-gradient-to-b from-aviva-black/60 via-aviva-black/40 to-aviva-black" />

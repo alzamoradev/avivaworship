@@ -128,15 +128,6 @@ export function Header() {
                       </Link>
                     )}
                     
-                    <Link 
-                      href="/perfil"
-                      className="flex items-center gap-3 px-4 py-2 hover:bg-aviva-gray transition-colors"
-                      onClick={() => setUserMenuOpen(false)}
-                    >
-                      <User size={18} />
-                      <span>Mi Perfil</span>
-                    </Link>
-                    
                     <button 
                       onClick={() => signOut()}
                       className="w-full flex items-center gap-3 px-4 py-2 hover:bg-aviva-gray transition-colors text-red-400"

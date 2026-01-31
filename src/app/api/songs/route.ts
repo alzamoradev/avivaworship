@@ -16,9 +16,9 @@ export async function GET(request: NextRequest) {
     
     if (query) {
       where.OR = [
-        { title: { contains: query } },
-        { artist: { contains: query } },
-        { album: { contains: query } },
+        { title: { contains: query, mode: 'insensitive' } },
+        { artist: { contains: query, mode: 'insensitive' } },
+        { album: { contains: query, mode: 'insensitive' } },
       ]
     }
     
