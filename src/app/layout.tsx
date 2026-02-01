@@ -3,8 +3,7 @@ import { Archivo } from "next/font/google";
 import "./globals.css";
 import { SessionProvider } from "@/components/providers/SessionProvider";
 import { ToastProvider } from "@/components/ui/Toast";
-import { Header } from "@/components/ui/Header";
-import { BottomNav } from "@/components/ui/BottomNav";
+import { LayoutWrapper } from "@/components/providers/LayoutWrapper";
 
 const archivo = Archivo({
   subsets: ["latin"],
@@ -46,11 +45,9 @@ export default function RootLayout({
       <body className={`${archivo.className} antialiased bg-aviva-black text-aviva-text`}>
         <SessionProvider>
           <ToastProvider>
-            <Header />
-            <main className="min-h-screen pt-16 pb-20 md:pb-6">
+            <LayoutWrapper>
               {children}
-            </main>
-            <BottomNav />
+            </LayoutWrapper>
           </ToastProvider>
         </SessionProvider>
       </body>
