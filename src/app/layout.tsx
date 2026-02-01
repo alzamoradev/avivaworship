@@ -45,6 +45,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" className={archivo.variable}>
+      <head>
+        <link rel="icon" href="/favicon.png" type="image/png" />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+      </head>
       <body className={`${archivo.className} antialiased bg-aviva-black text-aviva-text`}>
         <SessionProvider>
           <ToastProvider>
