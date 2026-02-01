@@ -15,6 +15,16 @@ const archivo = Archivo({
 export const metadata: Metadata = {
   title: "AVIVA Worship - Cancionero Digital",
   description: "Cancionero digital para músicos de AVIVA Worship. Encuentra letras, acordes y tonalidades de tus canciones favoritas.",
+  robots: {
+    index: false,
+    follow: false,
+    nocache: true,
+    googleBot: {
+      index: false,
+      follow: false,
+      noimageindex: true,
+    },
+  },
   manifest: "/manifest.json",
   icons: {
     icon: [
