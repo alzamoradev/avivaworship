@@ -26,6 +26,7 @@ export default function EditarCancionPage({ params }: { params: Promise<{ id: st
     tempo: '',
     lyrics: '',
     lyricsChords: '',
+    chordProgression: '',
     spotifyUrl: '',
     youtubeUrl: '',
     audioUrl: '',
@@ -56,6 +57,7 @@ export default function EditarCancionPage({ params }: { params: Promise<{ id: st
           tempo: song.tempo?.toString() || '',
           lyrics: song.lyrics || '',
           lyricsChords: song.lyricsChords || '',
+          chordProgression: song.chordProgression || '',
           spotifyUrl: song.spotifyUrl || '',
           youtubeUrl: song.youtubeUrl || '',
           audioUrl: song.audioUrl || '',
@@ -280,7 +282,28 @@ export default function EditarCancionPage({ params }: { params: Promise<{ id: st
             />
           </div>
         </div>
-        
+
+        {/* Chord Progression */}
+        <div className="bg-aviva-dark-lighter border border-aviva-gray rounded-2xl p-6">
+          <h2 className="text-lg font-semibold mb-2">Progresión de acordes</h2>
+          <p className="text-sm text-aviva-text-muted mb-4">
+            Ingresa la progresión de acordes con etiquetas de sección. Formato: [INTRO] C Am F G [VERSO] Am F C G [CORO] F G Am
+          </p>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Progresión
+            </label>
+            <textarea
+              value={formData.chordProgression}
+              onChange={(e) => setFormData({ ...formData, chordProgression: e.target.value })}
+              className="input-aviva font-mono text-sm"
+              rows={4}
+              placeholder="[INTRO] C Am F G [VERSO] Am F C G [CORO] F G Am"
+            />
+          </div>
+        </div>
+
         {/* Media Links */}
         <div className="bg-aviva-dark-lighter border border-aviva-gray rounded-2xl p-6">
           <h2 className="text-lg font-semibold mb-4">Enlaces de audio</h2>

@@ -52,6 +52,7 @@ export async function PUT(
         tempo: body.tempo ? parseInt(body.tempo) : null,
         lyrics: body.lyrics,
         lyricsChords: body.lyricsChords,
+        chordProgression: body.chordProgression,
         spotifyUrl: body.spotifyUrl,
         youtubeUrl: body.youtubeUrl,
         audioUrl: body.audioUrl,

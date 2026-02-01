@@ -20,13 +20,15 @@ import {
 import { ChordDiagram, ChordModal } from '@/components/ui/ChordDiagram'
 import { Modal } from '@/components/ui/Modal'
 import { useToast } from '@/components/ui/Toast'
-import { 
-  transposeLyrics, 
-  getAllKeys, 
+import {
+  transposeLyrics,
+  getAllKeys,
   getSemitones,
   extractChords,
   formatLyricsWithChords,
-  getLyricsOnly
+  getLyricsOnly,
+  transposeChordProgression,
+  formatChordProgression
 } from '@/lib/chords'
 
 interface Song {
@@ -39,10 +41,13 @@ interface Song {
   tempo: number | null
   lyrics: string
   lyricsChords: string
+  chordProgression: string | null
   spotifyUrl: string | null
   youtubeUrl: string | null
   audioUrl: string | null
 }
+
+type ViewMode = 'chords' | 'lyrics' | 'progression'
 
 interface Playlist {
   id: string
@@ -60,7 +65,7 @@ export default function SongPage({ params }: { params: Promise<{ id: string }> }
   const [loading, setLoading] = useState(true)
   const [isFavorite, setIsFavorite] = useState(false)
   const [currentKey, setCurrentKey] = useState('')
-  const [showChords, setShowChords] = useState(true)
+  const [viewMode, setViewMode] = useState<ViewMode>('chords')
   const [selectedChord, setSelectedChord] = useState<string | null>(null)
   const [showPlaylistModal, setShowPlaylistModal] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
@@ -187,14 +192,22 @@ export default function SongPage({ params }: { params: Promise<{ id: string }> }
   
   function copyLyrics() {
     if (!song) return
-    
-    const text = showChords 
-      ? getTransposedLyrics().replace(/\[([^\]]+)\]/g, '[$1]')
-      : song.lyrics
-    
+
+    let text: string
+    if (viewMode === 'chords') {
+      text = getTransposedLyrics().replace(/\[([^\]]+)\]/g, '[$1]')
+    } else if (viewMode === 'progression' && song.chordProgression) {
+      text = transposeChordProgression(
+        song.chordProgression,
+        getSemitones(song.originalKey, currentKey)
+      )
+    } else {
+      text = song.lyrics
+    }
+
     navigator.clipboard.writeText(text)
     setCopied(true)
-    showToast('Letra copiada al portapapeles', 'success')
+    showToast('Copiado al portapapeles', 'success')
     setTimeout(() => setCopied(false), 2000)
   }
   
@@ -384,18 +397,48 @@ export default function SongPage({ params }: { params: Promise<{ id: string }> }
             )}
           </div>
           
-          <button
-            onClick={() => setShowChords(!showChords)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-aviva-gray hover:bg-aviva-gray-light transition-colors"
-          >
-            {showChords ? <EyeOff size={18} /> : <Eye size={18} />}
-            {showChords ? 'Ocultar acordes' : 'Mostrar acordes'}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setViewMode('chords')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-colors ${
+                viewMode === 'chords'
+                  ? 'bg-aviva-gold text-aviva-black font-medium'
+                  : 'bg-aviva-gray hover:bg-aviva-gray-light'
+              }`}
+            >
+              <Eye size={18} />
+              <span className="hidden sm:inline">Acordes</span>
+            </button>
+            <button
+              onClick={() => setViewMode('lyrics')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-colors ${
+                viewMode === 'lyrics'
+                  ? 'bg-aviva-gold text-aviva-black font-medium'
+                  : 'bg-aviva-gray hover:bg-aviva-gray-light'
+              }`}
+            >
+              <EyeOff size={18} />
+              <span className="hidden sm:inline">Solo letra</span>
+            </button>
+            {song.chordProgression && (
+              <button
+                onClick={() => setViewMode('progression')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-colors ${
+                  viewMode === 'progression'
+                    ? 'bg-aviva-gold text-aviva-black font-medium'
+                    : 'bg-aviva-gray hover:bg-aviva-gray-light'
+                }`}
+              >
+                <Music size={18} />
+                <span className="hidden sm:inline">Progresión</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
-      
+
       {/* Chord Reference (only when showing chords) */}
-      {showChords && uniqueChords.length > 0 && (
+      {viewMode === 'chords' && uniqueChords.length > 0 && (
         <div className="mb-6">
           <h3 className="text-sm font-medium text-aviva-text-muted mb-3">
             Acordes usados (toca para ver diagrama)
@@ -414,9 +457,9 @@ export default function SongPage({ params }: { params: Promise<{ id: string }> }
         </div>
       )}
       
-      {/* Lyrics */}
+      {/* Content based on view mode */}
       <div className="bg-aviva-dark-lighter border border-aviva-gray rounded-2xl p-6">
-        {showChords ? (
+        {viewMode === 'chords' && (
           <div className="lyrics-line font-mono">
             {formattedLyrics.map((line, lineIdx) => (
               <div key={lineIdx} className="min-h-[1.5em]">
@@ -436,9 +479,40 @@ export default function SongPage({ params }: { params: Promise<{ id: string }> }
               </div>
             ))}
           </div>
-        ) : (
+        )}
+
+        {viewMode === 'lyrics' && (
           <div className="lyrics-only whitespace-pre-wrap text-lg">
             {song.lyrics}
+          </div>
+        )}
+
+        {viewMode === 'progression' && song.chordProgression && (
+          <div className="chord-progression">
+            <div className="flex flex-wrap items-center gap-3">
+              {formatChordProgression(
+                transposeChordProgression(
+                  song.chordProgression,
+                  getSemitones(song.originalKey, currentKey)
+                )
+              ).map((part, idx) => (
+                part.type === 'section' ? (
+                  <div key={idx} className="w-full mt-4 first:mt-0">
+                    <span className="text-aviva-gold font-bold text-lg">
+                      {part.content}
+                    </span>
+                  </div>
+                ) : (
+                  <button
+                    key={idx}
+                    onClick={() => setSelectedChord(part.content)}
+                    className="px-4 py-2 rounded-lg bg-aviva-gray text-aviva-text font-mono font-bold text-lg hover:bg-aviva-gray-light transition-colors"
+                  >
+                    {part.content}
+                  </button>
+                )
+              ))}
+            </div>
           </div>
         )}
       </div>

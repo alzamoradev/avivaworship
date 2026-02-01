@@ -208,3 +208,50 @@ export function getLyricsOnly(lyrics: string): string {
   return lyrics.replace(/\[[^\]]*\]/g, '')
 }
 
+// Secciones válidas para la progresión de acordes
+const SECTION_LABELS = ['INTRO', 'VERSO', 'PRE CORO', 'PRECORO', 'PRE-CORO', 'CORO', 'PUENTE', 'BRIDGE', 'OUTRO', 'FINAL', 'INSTRUMENTAL', 'INTERLUDIO', 'TAG', 'VERSO 1', 'VERSO 2', 'VERSO 3', 'CORO 1', 'CORO 2']
+
+// Parsear y transponer la progresión de acordes
+// Formato: [INTRO] C Am F G [VERSO] Am F C G [CORO] F G Am
+export function transposeChordProgression(progression: string, semitones: number, useFlats: boolean = false): string {
+  if (!progression) return ''
+
+  // Transponer cada acorde que no sea una etiqueta de sección
+  return progression.replace(/\[([^\]]+)\]|([A-G][#b]?(?:m|maj|dim|aug|sus|add)?[0-9]?(?:\/[A-G][#b]?)?)/gi, (match, sectionLabel, chord) => {
+    if (sectionLabel) {
+      // Es una etiqueta de sección, mantenerla igual
+      return `[${sectionLabel}]`
+    }
+    if (chord) {
+      // Es un acorde, transponerlo
+      return transposeChord(chord, semitones, useFlats)
+    }
+    return match
+  })
+}
+
+// Formatear la progresión de acordes para visualización
+export interface ChordProgressionPart {
+  type: 'section' | 'chord'
+  content: string
+}
+
+export function formatChordProgression(progression: string): ChordProgressionPart[] {
+  if (!progression) return []
+
+  const parts: ChordProgressionPart[] = []
+  const regex = /\[([^\]]+)\]|([A-G][#b]?(?:m|maj|dim|aug|sus|add)?[0-9]?(?:\/[A-G][#b]?)?)/gi
+  let match
+
+  while ((match = regex.exec(progression)) !== null) {
+    const [, sectionLabel, chord] = match
+    if (sectionLabel) {
+      parts.push({ type: 'section', content: sectionLabel.toUpperCase() })
+    } else if (chord) {
+      parts.push({ type: 'chord', content: chord })
+    }
+  }
+
+  return parts
+}
+
