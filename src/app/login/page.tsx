@@ -75,7 +75,7 @@ function LoginContent() {
         <div className="absolute inset-x-0 bottom-0 h-[50%] bg-aviva-black md:hidden" />
 
         {/* Content */}
-        <div className="relative z-10 w-full max-w-md mx-auto px-4 py-8">
+        <div className="relative z-10 w-full max-w-md mx-auto px-4 py-8 pt-[100px]">
           {/* Logo */}
           <div className="text-center mb-8">
             <svg width="184" height="66" viewBox="0 0 184 66" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-16 w-auto mx-auto mb-6">
