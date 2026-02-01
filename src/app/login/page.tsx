@@ -60,16 +60,20 @@ function LoginContent() {
     <div className="-mt-16">
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         {/* Background Image */}
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+        <div className="absolute inset-x-0 top-0 h-[53%] md:h-full md:inset-0">
           <img
             src="/hero-login.webp"
             alt="Worship"
-            style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
+            className="w-full h-full object-cover object-center"
           />
-          {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-aviva-black/60 via-aviva-black/40 to-aviva-black" />
-          <div className="absolute inset-0 bg-gradient-to-t from-aviva-black via-transparent to-transparent" />
+          {/* Gradient Overlay - Mobile */}
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-aviva-black md:hidden" />
+          {/* Gradient Overlay - Desktop */}
+          <div className="hidden md:block absolute inset-0 bg-gradient-to-b from-aviva-black/60 via-aviva-black/40 to-aviva-black" />
+          <div className="hidden md:block absolute inset-0 bg-gradient-to-t from-aviva-black via-transparent to-transparent" />
         </div>
+        {/* Mobile background fill */}
+        <div className="absolute inset-x-0 bottom-0 h-[50%] bg-aviva-black md:hidden" />
 
         {/* Content */}
         <div className="relative z-10 w-full max-w-md mx-auto px-4 pt-24 pb-16">
