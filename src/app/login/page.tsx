@@ -66,7 +66,7 @@ function LoginContent() {
             className="w-full h-full object-cover object-center"
           />
           {/* Gradient Overlay - Mobile */}
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-aviva-black md:hidden" />
+          <div className="absolute inset-0 bg-gradient-to-b from-aviva-black/70 via-aviva-black/40 to-aviva-black md:hidden" />
           {/* Gradient Overlay - Desktop */}
           <div className="hidden md:block absolute inset-0 bg-gradient-to-b from-aviva-black/60 via-aviva-black/40 to-aviva-black" />
           <div className="hidden md:block absolute inset-0 bg-gradient-to-t from-aviva-black via-transparent to-transparent" />
