@@ -57,7 +57,7 @@ function LoginContent() {
   }
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center overflow-hidden">
+    <div className="fixed inset-0 flex items-start justify-center overflow-hidden overflow-y-auto">
         {/* Background Image */}
         <div className="absolute inset-x-0 top-0 h-[53%] md:h-full md:inset-0">
           <img
