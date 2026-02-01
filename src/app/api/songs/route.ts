@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import prisma from '@/lib/prisma'
+import { generateUniqueSlug } from '@/lib/utils'
 
 // GET /api/songs - Get all songs with filters
 export async function GET(request: NextRequest) {
@@ -34,6 +35,7 @@ export async function GET(request: NextRequest) {
         skip: offset,
         select: {
           id: true,
+          slug: true,
           title: true,
           artist: true,
           album: true,
@@ -86,9 +88,16 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
-    
+
+    // Generate unique slug from title
+    const slug = await generateUniqueSlug(title, async (s) => {
+      const existing = await prisma.song.findUnique({ where: { slug: s } })
+      return !!existing
+    })
+
     const song = await prisma.song.create({
       data: {
+        slug,
         title,
         artist,
         album,

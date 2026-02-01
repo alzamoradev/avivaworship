@@ -64,6 +64,7 @@ model VerificationToken {
 
 model Song {
   id           String   @id @default(cuid())
+  slug         String   @unique
   title        String
   artist       String?
   album        String?

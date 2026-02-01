@@ -6,6 +6,7 @@ import { useState } from 'react'
 
 interface Song {
   id: string
+  slug: string
   title: string
   artist?: string | null
   album?: string | null
@@ -32,7 +33,7 @@ export function SongCard({
   
   return (
     <div className="card-aviva group relative">
-      <Link href={`/canciones/${song.id}`} className="flex items-center gap-4">
+      <Link href={`/canciones/${song.slug}`} className="flex items-center gap-4">
         {/* Album Cover */}
         <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-lg overflow-hidden bg-aviva-gray flex-shrink-0">
           {song.albumCover ? (
@@ -155,7 +156,7 @@ export function SongCardCompact({
         </span>
       )}
       
-      <Link href={`/canciones/${song.id}`} className="flex items-center gap-3 flex-1 min-w-0">
+      <Link href={`/canciones/${song.slug}`} className="flex items-center gap-3 flex-1 min-w-0">
         <div className="w-10 h-10 rounded-lg overflow-hidden bg-aviva-gray flex-shrink-0">
           {song.albumCover ? (
             <img 

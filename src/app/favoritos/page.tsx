@@ -12,6 +12,7 @@ interface Favorite {
   songId: string
   song: {
     id: string
+    slug: string
     title: string
     artist: string | null
     album: string | null

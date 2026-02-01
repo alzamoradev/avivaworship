@@ -230,7 +230,7 @@ Verso 2:
   ]
 
   for (const song of songs) {
-    const id = song.title.toLowerCase()
+    const slug = song.title.toLowerCase()
       .replace(/\s+/g, '-')
       .replace(/á/g, 'a')
       .replace(/é/g, 'e')
@@ -238,12 +238,12 @@ Verso 2:
       .replace(/ó/g, 'o')
       .replace(/ú/g, 'u')
       .replace(/ñ/g, 'n')
-    
+
     await prisma.song.upsert({
-      where: { id },
+      where: { slug },
       update: song,
       create: {
-        id,
+        slug,
         ...song,
       },
     })

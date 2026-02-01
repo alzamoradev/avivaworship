@@ -8,6 +8,7 @@ import { useToast } from '@/components/ui/Toast'
 
 interface Song {
   id: string
+  slug: string
   title: string
   artist: string | null
   album: string | null

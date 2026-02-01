@@ -7,6 +7,7 @@ import { SongCard } from '@/components/ui/SongCard'
 
 interface Song {
   id: string
+  slug: string
   title: string
   artist: string | null
   album: string | null
