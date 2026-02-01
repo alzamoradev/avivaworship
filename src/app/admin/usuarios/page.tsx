@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Shield, User, Users } from 'lucide-react'
+import { ArrowLeft, Shield, User, Users, Trash2 } from 'lucide-react'
 import { useToast } from '@/components/ui/Toast'
 
 interface UserData {
@@ -54,21 +54,21 @@ export default function AdminUsuariosPage() {
   
   async function toggleRole(userId: string, currentRole: string) {
     const newRole = currentRole === 'admin' ? 'user' : 'admin'
-    
+
     if (userId === session?.user?.id && newRole === 'user') {
       showToast('No puedes quitarte el rol de admin', 'warning')
       return
     }
-    
+
     try {
       const res = await fetch(`/api/users/${userId}/role`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ role: newRole }),
       })
-      
+
       if (res.ok) {
-        setUsers(prev => prev.map(u => 
+        setUsers(prev => prev.map(u =>
           u.id === userId ? { ...u, role: newRole } : u
         ))
         showToast(
@@ -81,6 +81,33 @@ export default function AdminUsuariosPage() {
       }
     } catch (error) {
       showToast('Error al cambiar rol', 'error')
+    }
+  }
+
+  async function deleteUser(userId: string, userName: string | null) {
+    if (userId === session?.user?.id) {
+      showToast('No podés eliminar tu propia cuenta', 'warning')
+      return
+    }
+
+    if (!confirm(`¿Estás seguro de eliminar a ${userName || 'este usuario'}? Esta acción no se puede deshacer.`)) {
+      return
+    }
+
+    try {
+      const res = await fetch(`/api/users/${userId}`, {
+        method: 'DELETE',
+      })
+
+      if (res.ok) {
+        setUsers(prev => prev.filter(u => u.id !== userId))
+        showToast('Usuario eliminado', 'success')
+      } else {
+        const data = await res.json()
+        showToast(data.error || 'Error al eliminar', 'error')
+      }
+    } catch (error) {
+      showToast('Error al eliminar usuario', 'error')
     }
   }
   
@@ -126,6 +153,7 @@ export default function AdminUsuariosPage() {
                   <th className="text-center p-4 text-aviva-text-muted font-medium">Listas</th>
                   <th className="text-center p-4 text-aviva-text-muted font-medium hidden md:table-cell">Favoritos</th>
                   <th className="text-center p-4 text-aviva-text-muted font-medium">Rol</th>
+                  <th className="text-center p-4 text-aviva-text-muted font-medium">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -177,6 +205,16 @@ export default function AdminUsuariosPage() {
                             Usuario
                           </>
                         )}
+                      </button>
+                    </td>
+                    <td className="p-4 text-center">
+                      <button
+                        onClick={() => deleteUser(user.id, user.name)}
+                        disabled={user.id === session?.user?.id}
+                        className="p-2 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                        title={user.id === session?.user?.id ? 'No podés eliminar tu propia cuenta' : 'Eliminar usuario'}
+                      >
+                        <Trash2 size={18} />
                       </button>
                     </td>
                   </tr>

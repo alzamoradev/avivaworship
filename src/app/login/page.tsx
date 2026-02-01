@@ -191,8 +191,10 @@ function LoginContent() {
 
           {/* Info */}
           <div className="mt-6 text-center">
-            <p className="text-sm text-aviva-text-muted/80">
-              ¿Necesitas acceso? Contacta al líder de tu iglesia
+            <p className="text-xs text-aviva-text-muted/60">
+              Uso exclusivo para miembros de la comunidad Aviva.
+              <br />
+              Nos reservamos el derecho de eliminar cuentas no autorizadas.
             </p>
           </div>
         </div>
