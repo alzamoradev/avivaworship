@@ -57,8 +57,7 @@ function LoginContent() {
   }
 
   return (
-    <div className="-mt-16">
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <div className="fixed inset-0 flex items-center justify-center overflow-hidden">
         {/* Background Image */}
         <div className="absolute inset-x-0 top-0 h-[53%] md:h-full md:inset-0">
           <img
@@ -199,7 +198,6 @@ function LoginContent() {
             </p>
           </div>
         </div>
-      </section>
     </div>
   )
 }
