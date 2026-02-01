@@ -140,12 +140,11 @@ export default function ListasPage() {
     setShowShareModal(true)
   }
   
-  function copyShareLink() {
+  function copyShareCode() {
     if (!selectedPlaylist?.shareCode) return
-    
-    const link = `${window.location.origin}/listas/join/${selectedPlaylist.shareCode}`
-    navigator.clipboard.writeText(link)
-    showToast('Enlace copiado', 'success')
+
+    navigator.clipboard.writeText(selectedPlaylist.shareCode)
+    showToast('Código copiado', 'success')
   }
   
   if (status === 'loading' || loading) {
@@ -166,7 +165,7 @@ export default function ListasPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold mb-1">Mis Listas</h1>
+          <h1 className="text-2xl font-bold mb-1">Mis listas</h1>
           <p className="text-aviva-text-muted">
             {playlists.length + sharedPlaylists.length} listas
           </p>
@@ -331,7 +330,7 @@ export default function ListasPage() {
             </div>
             
             <button
-              onClick={copyShareLink}
+              onClick={copyShareCode}
               className="btn-primary w-full"
             >
               Copiar enlace

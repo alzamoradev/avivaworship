@@ -144,7 +144,7 @@ export default function EditarCancionPage({ params }: { params: Promise<{ id: st
           >
             <ArrowLeft size={20} />
           </Link>
-          <h1 className="text-2xl font-bold">Editar Canción</h1>
+          <h1 className="text-2xl font-bold">Editar canción</h1>
         </div>
         
         <button

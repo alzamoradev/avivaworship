@@ -116,7 +116,7 @@ export default function AdminCancionesPage() {
           <ArrowLeft size={20} />
         </Link>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold">Gestionar Canciones</h1>
+          <h1 className="text-2xl font-bold">Gestionar canciones</h1>
           <p className="text-aviva-text-muted">{songs.length} canciones</p>
         </div>
         <Link href="/admin/canciones/nueva" className="btn-primary flex items-center gap-2">

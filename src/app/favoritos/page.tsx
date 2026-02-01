@@ -87,7 +87,7 @@ export default function FavoritosPage() {
     <div className="max-w-4xl mx-auto px-4 py-6">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-1">Mis Favoritos</h1>
+        <h1 className="text-2xl font-bold mb-1">Mis favoritos</h1>
         <p className="text-aviva-text-muted">
           {favorites.length} {favorites.length === 1 ? 'canción guardada' : 'canciones guardadas'}
         </p>

@@ -205,11 +205,10 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
     }
   }
   
-  function copyShareLink() {
+  function copyShareCode() {
     if (!playlist?.shareCode) return
-    const link = `${window.location.origin}/listas/join/${playlist.shareCode}`
-    navigator.clipboard.writeText(link)
-    showToast('Enlace copiado', 'success')
+    navigator.clipboard.writeText(playlist.shareCode)
+    showToast('Código copiado', 'success')
   }
   
   if (loading) {
@@ -434,7 +433,7 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
                 {playlist.shareCode}
               </p>
               <button
-                onClick={copyShareLink}
+                onClick={copyShareCode}
                 className="btn-secondary py-2"
               >
                 Copiar

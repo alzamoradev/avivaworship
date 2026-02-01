@@ -3,26 +3,19 @@
 import Link from 'next/link'
 import { useSession, signOut } from 'next-auth/react'
 import { useState } from 'react'
-import { 
-  Menu, 
-  X, 
-  User, 
-  LogOut, 
-  Settings, 
-  Music, 
-  ListMusic, 
-  Heart, 
-  Search,
+import {
+  User,
+  LogOut,
+  Settings,
   Shield
 } from 'lucide-react'
 
 export function Header() {
   const { data: session, status } = useSession()
-  const [menuOpen, setMenuOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
-  
+
   const isAdmin = session?.user?.role === 'admin'
-  
+
   return (
     <header className="fixed top-0 left-0 right-0 z-40 glass border-b border-aviva-gray safe-top">
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
@@ -43,53 +36,21 @@ export function Header() {
             <path d="M85.6 32.9599V23.0122H89.897C91.7852 23.0122 93 24.4353 93 26.2193C93 28.0034 91.7852 29.3015 89.897 29.3015H87.2035V32.9529H85.6V32.9599ZM89.661 28.0034C90.966 28.0034 91.5908 27.2398 91.5908 26.1916C91.5908 25.1433 90.9591 24.352 89.661 24.352H87.2035V28.0034H89.661Z" fill="#F2BC15"/>
           </svg>
         </Link>
-        
-        {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-6">
-          <Link 
-            href="/canciones" 
-            className="flex items-center gap-2 text-aviva-text hover:text-aviva-gold transition-colors"
-          >
-            <Music size={18} />
-            <span>Canciones</span>
-          </Link>
-          <Link 
-            href="/listas" 
-            className="flex items-center gap-2 text-aviva-text hover:text-aviva-gold transition-colors"
-          >
-            <ListMusic size={18} />
-            <span>Mis Listas</span>
-          </Link>
-          <Link 
-            href="/favoritos" 
-            className="flex items-center gap-2 text-aviva-text hover:text-aviva-gold transition-colors"
-          >
-            <Heart size={18} />
-            <span>Favoritos</span>
-          </Link>
-          <Link 
-            href="/buscar" 
-            className="flex items-center gap-2 text-aviva-text hover:text-aviva-gold transition-colors"
-          >
-            <Search size={18} />
-            <span>Buscar</span>
-          </Link>
-        </nav>
-        
+
         {/* User Menu */}
         <div className="flex items-center gap-3">
           {status === 'loading' ? (
             <div className="w-10 h-10 rounded-full skeleton" />
           ) : session ? (
             <div className="relative">
-              <button 
+              <button
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
                 className="flex items-center gap-2 p-1 rounded-full hover:ring-2 hover:ring-aviva-gold/50 transition-all"
               >
                 {session.user?.image ? (
-                  <img 
-                    src={session.user.image} 
-                    alt={session.user.name || ''} 
+                  <img
+                    src={session.user.image}
+                    alt={session.user.name || ''}
                     className="w-9 h-9 rounded-full border-2 border-aviva-gold"
                   />
                 ) : (
@@ -98,12 +59,12 @@ export function Header() {
                   </div>
                 )}
               </button>
-              
+
               {userMenuOpen && (
                 <>
-                  <div 
-                    className="fixed inset-0 z-40" 
-                    onClick={() => setUserMenuOpen(false)} 
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setUserMenuOpen(false)}
                   />
                   <div className="absolute right-0 top-full mt-2 w-56 py-2 bg-aviva-dark border border-aviva-gray rounded-xl shadow-xl z-50 animate-slide-down">
                     <div className="px-4 py-2 border-b border-aviva-gray">
@@ -116,86 +77,39 @@ export function Header() {
                         </span>
                       )}
                     </div>
-                    
+
                     {isAdmin && (
-                      <Link 
+                      <Link
                         href="/admin"
                         className="flex items-center gap-3 px-4 py-2 hover:bg-aviva-gray transition-colors"
                         onClick={() => setUserMenuOpen(false)}
                       >
                         <Settings size={18} />
-                        <span>Panel Admin</span>
+                        <span>Panel admin</span>
                       </Link>
                     )}
-                    
-                    <button 
+
+                    <button
                       onClick={() => signOut()}
                       className="w-full flex items-center gap-3 px-4 py-2 hover:bg-aviva-gray transition-colors text-red-400"
                     >
                       <LogOut size={18} />
-                      <span>Cerrar Sesión</span>
+                      <span>Cerrar sesión</span>
                     </button>
                   </div>
                 </>
               )}
             </div>
           ) : (
-            <Link 
+            <Link
               href="/login"
               className="btn-primary text-sm"
             >
-              Iniciar Sesión
+              Iniciar sesión
             </Link>
           )}
-          
-          {/* Mobile Menu Button */}
-          <button 
-            className="md:hidden p-2 hover:bg-aviva-gray rounded-lg transition-colors"
-            onClick={() => setMenuOpen(!menuOpen)}
-          >
-            {menuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
         </div>
       </div>
-      
-      {/* Mobile Nav */}
-      {menuOpen && (
-        <nav className="md:hidden border-t border-aviva-gray bg-aviva-dark animate-slide-down">
-          <Link 
-            href="/canciones" 
-            className="flex items-center gap-3 px-4 py-3 hover:bg-aviva-gray transition-colors"
-            onClick={() => setMenuOpen(false)}
-          >
-            <Music size={20} />
-            <span>Canciones</span>
-          </Link>
-          <Link 
-            href="/listas" 
-            className="flex items-center gap-3 px-4 py-3 hover:bg-aviva-gray transition-colors"
-            onClick={() => setMenuOpen(false)}
-          >
-            <ListMusic size={20} />
-            <span>Mis Listas</span>
-          </Link>
-          <Link 
-            href="/favoritos" 
-            className="flex items-center gap-3 px-4 py-3 hover:bg-aviva-gray transition-colors"
-            onClick={() => setMenuOpen(false)}
-          >
-            <Heart size={20} />
-            <span>Favoritos</span>
-          </Link>
-          <Link 
-            href="/buscar" 
-            className="flex items-center gap-3 px-4 py-3 hover:bg-aviva-gray transition-colors"
-            onClick={() => setMenuOpen(false)}
-          >
-            <Search size={20} />
-            <span>Buscar</span>
-          </Link>
-        </nav>
-      )}
     </header>
   )
 }
-

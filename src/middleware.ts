@@ -22,8 +22,8 @@ export const config = {
      * - /login (login page)
      * - /api/auth (auth API routes)
      * - /_next (Next.js internals)
-     * - /favicon.ico, /manifest.json, etc (static files)
+     * - Static files in public folder
      */
-    "/((?!login|api/auth|_next|favicon.ico|manifest.json|apple-touch-icon.png|icon-192x192.png|icon-512x512.png).*)",
+    "/((?!login|api/auth|_next/|.*\\..*).*)",
   ],
 }

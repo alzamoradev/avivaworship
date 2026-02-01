@@ -52,7 +52,7 @@ export default function AdminPage() {
   
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
-      <h1 className="text-2xl font-bold mb-6">Panel de Administración</h1>
+      <h1 className="text-2xl font-bold mb-6">Panel de administración</h1>
       
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
@@ -98,7 +98,7 @@ export default function AdminPage() {
             <Music className="text-aviva-gold" size={24} />
           </div>
           <div>
-            <h3 className="font-semibold">Gestionar Canciones</h3>
+            <h3 className="font-semibold">Gestionar canciones</h3>
             <p className="text-sm text-aviva-text-muted">Ver, editar y eliminar</p>
           </div>
         </Link>
@@ -111,7 +111,7 @@ export default function AdminPage() {
             <Plus className="text-green-500" size={24} />
           </div>
           <div>
-            <h3 className="font-semibold">Nueva Canción</h3>
+            <h3 className="font-semibold">Nueva canción</h3>
             <p className="text-sm text-aviva-text-muted">Agregar al cancionero</p>
           </div>
         </Link>

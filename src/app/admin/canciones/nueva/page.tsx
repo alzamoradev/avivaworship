@@ -84,7 +84,7 @@ export default function NuevaCancionPage() {
         >
           <ArrowLeft size={20} />
         </Link>
-        <h1 className="text-2xl font-bold">Nueva Canción</h1>
+        <h1 className="text-2xl font-bold">Nueva canción</h1>
       </div>
       
       <form onSubmit={handleSubmit} className="space-y-6">
