@@ -17,8 +17,11 @@ export const metadata: Metadata = {
   description: "Cancionero digital para músicos de AVIVA Worship. Encuentra letras, acordes y tonalidades de tus canciones favoritas.",
   manifest: "/manifest.json",
   icons: {
-    icon: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.png", type: "image/png" },
+    ],
+    apple: "/favicon.png",
   },
   appleWebApp: {
     capable: true,

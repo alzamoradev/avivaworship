@@ -92,12 +92,9 @@ function LoginContent() {
             <p className="text-aviva-gold text-sm font-semibold tracking-[0.2em] uppercase mb-2">
               Cancionero digital
             </p>
-            <h1 className="text-3xl font-black mb-2 tracking-tight">
+            <h1 className="text-3xl font-black tracking-tight">
               INICIAR SESIÓN
             </h1>
-            <p className="text-aviva-text-muted">
-              Accedé al cancionero de tu iglesia
-            </p>
           </div>
 
           {/* Login Card */}
@@ -192,7 +189,7 @@ function LoginContent() {
           {/* Info */}
           <div className="mt-6 text-center">
             <p className="text-xs text-aviva-text-muted/60">
-              Uso exclusivo para miembros de la comunidad Aviva.
+              Uso exclusivo para miembros de Comunidad Aviva.
               <br />
               Nos reservamos el derecho de eliminar cuentas no autorizadas.
             </p>
