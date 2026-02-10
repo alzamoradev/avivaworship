@@ -280,22 +280,22 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
           </div>
           
           {/* Actions */}
-          <div className="flex gap-2 w-full sm:w-auto">
+          <div className="flex flex-wrap gap-2 w-full sm:w-auto">
             {playlist.isOwner && (
               <>
                 <button
                   onClick={() => setShowShareModal(true)}
-                  className="btn-secondary flex-1 sm:flex-none flex items-center justify-center gap-2"
+                  className="btn-secondary flex items-center justify-center gap-1.5 text-sm px-3 py-2"
                 >
-                  <Share2 size={18} />
-                  <span className="sm:hidden">Compartir</span>
+                  <Share2 size={16} />
+                  <span>Compartir</span>
                 </button>
                 <button
                   onClick={() => router.push(`/listas/${playlist.id}/editar`)}
-                  className="btn-secondary flex-1 sm:flex-none flex items-center justify-center gap-2"
+                  className="btn-secondary flex items-center justify-center gap-1.5 text-sm px-3 py-2"
                 >
-                  <Edit2 size={18} />
-                  <span className="sm:hidden">Editar</span>
+                  <Edit2 size={16} />
+                  <span>Editar</span>
                 </button>
               </>
             )}
@@ -305,10 +305,10 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
                   fetchAvailableSongs()
                   setShowAddSongModal(true)
                 }}
-                className="btn-primary flex-1 sm:flex-none flex items-center justify-center gap-2"
+                className="btn-primary flex items-center justify-center gap-1.5 text-sm px-3 py-2"
               >
-                <Plus size={18} />
-                Agregar
+                <Plus size={16} />
+                <span>Agregar</span>
               </button>
             )}
           </div>
