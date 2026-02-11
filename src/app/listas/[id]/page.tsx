@@ -76,7 +76,7 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
   const [showAddSongModal, setShowAddSongModal] = useState(false)
   const [availableSongs, setAvailableSongs] = useState<Song[]>([])
   const [shareEmail, setShareEmail] = useState('')
-  const [shareCanEdit, setShareCanEdit] = useState(false)
+  const [shareCanEdit, setShareCanEdit] = useState(true)
   
   useEffect(() => {
     fetchPlaylist()
@@ -365,6 +365,7 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
               index={index}
               customKey={ps.customKey || undefined}
               onRemove={playlist.canEdit ? () => removeSongFromPlaylist(ps.songId) : undefined}
+              playlistId={playlist.id}
             />
           ))
         ) : (

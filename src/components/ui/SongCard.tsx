@@ -1,8 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Heart, Play, MoreVertical, Trash2 } from 'lucide-react'
-import { useState } from 'react'
+import { ListPlus, Play, Trash2 } from 'lucide-react'
 
 interface Song {
   id: string
@@ -16,29 +15,23 @@ interface Song {
 
 interface SongCardProps {
   song: Song
-  isFavorite?: boolean
-  onToggleFavorite?: (songId: string) => void
   onAddToPlaylist?: (songId: string) => void
   showOptions?: boolean
 }
 
-export function SongCard({ 
-  song, 
-  isFavorite = false, 
-  onToggleFavorite, 
+export function SongCard({
+  song,
   onAddToPlaylist,
-  showOptions = true 
+  showOptions = true
 }: SongCardProps) {
-  const [menuOpen, setMenuOpen] = useState(false)
-  
   return (
     <div className="card-aviva group relative">
       <Link href={`/canciones/${song.slug}`} className="flex items-center gap-4">
         {/* Album Cover */}
         <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-lg overflow-hidden bg-aviva-gray flex-shrink-0">
           {song.albumCover ? (
-            <img 
-              src={song.albumCover} 
+            <img
+              src={song.albumCover}
               alt={song.album || song.title}
               className="w-full h-full object-cover"
             />
@@ -49,13 +42,13 @@ export function SongCard({
               </span>
             </div>
           )}
-          
+
           {/* Play overlay */}
           <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
             <Play size={24} className="text-white" fill="white" />
           </div>
         </div>
-        
+
         {/* Song Info */}
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-aviva-text truncate group-hover:text-aviva-gold transition-colors">
@@ -76,60 +69,21 @@ export function SongCard({
           </div>
         </div>
       </Link>
-      
-      {/* Actions */}
-      {showOptions && (
-        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1">
-          {onToggleFavorite && (
-            <button
-              onClick={(e) => {
-                e.preventDefault()
-                onToggleFavorite(song.id)
-              }}
-              className={`p-2 rounded-full transition-all ${
-                isFavorite 
-                  ? 'text-red-500 hover:bg-red-500/10' 
-                  : 'text-aviva-text-muted hover:text-red-500 hover:bg-aviva-gray'
-              }`}
-            >
-              <Heart size={20} fill={isFavorite ? 'currentColor' : 'none'} />
-            </button>
-          )}
-          
-          {onAddToPlaylist && (
-            <div className="relative">
-              <button
-                onClick={(e) => {
-                  e.preventDefault()
-                  setMenuOpen(!menuOpen)
-                }}
-                className="p-2 rounded-full text-aviva-text-muted hover:text-aviva-text hover:bg-aviva-gray transition-all"
-              >
-                <MoreVertical size={20} />
-              </button>
-              
-              {menuOpen && (
-                <>
-                  <div 
-                    className="fixed inset-0 z-40" 
-                    onClick={() => setMenuOpen(false)} 
-                  />
-                  <div className="absolute right-0 top-full mt-1 w-48 py-2 bg-aviva-dark border border-aviva-gray rounded-xl shadow-xl z-50 animate-slide-down">
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault()
-                        onAddToPlaylist(song.id)
-                        setMenuOpen(false)
-                      }}
-                      className="w-full text-left px-4 py-2 hover:bg-aviva-gray transition-colors"
-                    >
-                      Agregar a lista
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
-          )}
+
+      {/* Add to Playlist Button */}
+      {showOptions && onAddToPlaylist && (
+        <div className="absolute right-4 top-1/2 -translate-y-1/2">
+          <button
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              onAddToPlaylist(song.id)
+            }}
+            className="p-2 rounded-full text-aviva-text-muted hover:text-aviva-gold hover:bg-aviva-gold/10 transition-all"
+            title="Agregar a lista"
+          >
+            <ListPlus size={22} />
+          </button>
         </div>
       )}
     </div>
@@ -141,13 +95,20 @@ export function SongCardCompact({
   song,
   index,
   onRemove,
-  customKey
+  customKey,
+  playlistId
 }: {
   song: Song
   index?: number
   onRemove?: () => void
   customKey?: string
+  playlistId?: string
 }) {
+  // Build URL with playlist context if available
+  const songUrl = playlistId && index !== undefined
+    ? `/canciones/${song.slug}?lista=${playlistId}&index=${index}`
+    : `/canciones/${song.slug}`
+
   return (
     <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-aviva-gray/50 transition-colors group">
       {index !== undefined && (
@@ -156,7 +117,7 @@ export function SongCardCompact({
         </span>
       )}
 
-      <Link href={`/canciones/${song.slug}`} className="flex items-center gap-3 flex-1 min-w-0">
+      <Link href={songUrl} className="flex items-center gap-3 flex-1 min-w-0">
         <div className="w-10 h-10 rounded-lg overflow-hidden bg-aviva-gray flex-shrink-0">
           {song.albumCover ? (
             <img
@@ -197,4 +158,3 @@ export function SongCardCompact({
     </div>
   )
 }
-

@@ -2,20 +2,23 @@
 
 import { useState, useEffect, use } from 'react'
 import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
-import { 
-  ArrowLeft, 
-  Heart, 
-  Share2, 
-  ListPlus, 
-  ChevronUp, 
+import { useRouter, useSearchParams } from 'next/navigation'
+import {
+  ArrowLeft,
+  Heart,
+  Share2,
+  ListPlus,
+  ChevronUp,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Music,
   Eye,
   EyeOff,
   ExternalLink,
   Copy,
-  Check
+  Check,
+  List
 } from 'lucide-react'
 import { ChordDiagram, ChordModal } from '@/components/ui/ChordDiagram'
 import { Modal } from '@/components/ui/Modal'
@@ -30,9 +33,11 @@ import {
   transposeChordProgression,
   formatChordProgression
 } from '@/lib/chords'
+import Link from 'next/link'
 
 interface Song {
   id: string
+  slug: string
   title: string
   artist: string | null
   album: string | null
@@ -55,12 +60,37 @@ interface Playlist {
   _count?: { songs: number }
 }
 
+interface PlaylistSong {
+  id: string
+  songId: string
+  customKey: string | null
+  order: number
+  song: {
+    id: string
+    slug: string
+    title: string
+    originalKey: string
+  }
+}
+
+interface PlaylistContext {
+  id: string
+  name: string
+  songs: PlaylistSong[]
+  currentIndex: number
+}
+
 export default function SongPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params)
+  const searchParams = useSearchParams()
   const { data: session } = useSession()
   const router = useRouter()
   const { showToast } = useToast()
-  
+
+  // Playlist context from URL params
+  const playlistId = searchParams.get('lista')
+  const songIndex = parseInt(searchParams.get('index') || '0')
+
   const [song, setSong] = useState<Song | null>(null)
   const [loading, setLoading] = useState(true)
   const [isFavorite, setIsFavorite] = useState(false)
@@ -71,22 +101,32 @@ export default function SongPage({ params }: { params: Promise<{ id: string }> }
   const [showShareModal, setShowShareModal] = useState(false)
   const [playlists, setPlaylists] = useState<Playlist[]>([])
   const [copied, setCopied] = useState(false)
-  
+  const [playlistContext, setPlaylistContext] = useState<PlaylistContext | null>(null)
+
   useEffect(() => {
     fetchSong()
     if (session?.user?.id) {
       fetchFavoriteStatus()
       fetchPlaylists()
     }
-  }, [resolvedParams.id, session])
-  
+    if (playlistId) {
+      fetchPlaylistContext()
+    }
+  }, [resolvedParams.id, session, playlistId])
+
   async function fetchSong() {
     try {
       const res = await fetch(`/api/songs/${resolvedParams.id}`)
       if (res.ok) {
         const data = await res.json()
         setSong(data)
-        setCurrentKey(data.originalKey)
+        // Si venimos de una lista con customKey, usar esa tonalidad
+        if (playlistContext) {
+          const playlistSong = playlistContext.songs[songIndex]
+          setCurrentKey(playlistSong?.customKey || data.originalKey)
+        } else {
+          setCurrentKey(data.originalKey)
+        }
       } else {
         router.push('/canciones')
       }
@@ -96,7 +136,30 @@ export default function SongPage({ params }: { params: Promise<{ id: string }> }
       setLoading(false)
     }
   }
-  
+
+  async function fetchPlaylistContext() {
+    if (!playlistId) return
+    try {
+      const res = await fetch(`/api/playlists/${playlistId}`)
+      if (res.ok) {
+        const data = await res.json()
+        setPlaylistContext({
+          id: data.id,
+          name: data.name,
+          songs: data.songs,
+          currentIndex: songIndex
+        })
+        // Set custom key if available
+        const playlistSong = data.songs[songIndex]
+        if (playlistSong?.customKey && song) {
+          setCurrentKey(playlistSong.customKey)
+        }
+      }
+    } catch (error) {
+      console.error('Error:', error)
+    }
+  }
+
   async function fetchFavoriteStatus() {
     try {
       const res = await fetch(`/api/favorites/check/${resolvedParams.id}`)
@@ -108,7 +171,7 @@ export default function SongPage({ params }: { params: Promise<{ id: string }> }
       console.error('Error:', error)
     }
   }
-  
+
   async function fetchPlaylists() {
     try {
       const res = await fetch('/api/playlists')
@@ -120,20 +183,20 @@ export default function SongPage({ params }: { params: Promise<{ id: string }> }
       console.error('Error:', error)
     }
   }
-  
+
   async function toggleFavorite() {
     if (!session) {
-      showToast('Inicia sesión para guardar favoritos', 'warning')
+      showToast('Inicia sesion para guardar favoritos', 'warning')
       return
     }
-    
+
     try {
       const res = await fetch('/api/favorites', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ songId: song?.id }),
       })
-      
+
       if (res.ok) {
         const data = await res.json()
         setIsFavorite(data.favorited)
@@ -146,50 +209,50 @@ export default function SongPage({ params }: { params: Promise<{ id: string }> }
       showToast('Error al actualizar favoritos', 'error')
     }
   }
-  
+
   async function addToPlaylist(playlistId: string) {
     try {
       const res = await fetch(`/api/playlists/${playlistId}/songs`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           songId: song?.id,
           customKey: currentKey !== song?.originalKey ? currentKey : undefined
         }),
       })
-      
+
       if (res.ok) {
-        showToast('Canción agregada a la lista', 'success')
+        showToast('Cancion agregada a la lista', 'success')
         setShowPlaylistModal(false)
       } else {
         const data = await res.json()
         showToast(data.error || 'Error al agregar', 'error')
       }
     } catch (error) {
-      showToast('Error al agregar canción', 'error')
+      showToast('Error al agregar cancion', 'error')
     }
   }
-  
+
   function transposeUp() {
     const keys = getAllKeys()
     const currentIndex = keys.indexOf(currentKey)
     const newIndex = (currentIndex + 1) % keys.length
     setCurrentKey(keys[newIndex])
   }
-  
+
   function transposeDown() {
     const keys = getAllKeys()
     const currentIndex = keys.indexOf(currentKey)
     const newIndex = (currentIndex - 1 + keys.length) % keys.length
     setCurrentKey(keys[newIndex])
   }
-  
+
   function getTransposedLyrics(): string {
     if (!song) return ''
     const semitones = getSemitones(song.originalKey, currentKey)
     return transposeLyrics(song.lyricsChords, semitones)
   }
-  
+
   function copyLyrics() {
     if (!song) return
 
@@ -210,17 +273,29 @@ export default function SongPage({ params }: { params: Promise<{ id: string }> }
     showToast('Copiado al portapapeles', 'success')
     setTimeout(() => setCopied(false), 2000)
   }
-  
+
   function shareToWhatsApp() {
     if (!song) return
 
-    // Siempre enviar solo la letra sin acordes
-    const text = `🎵 *${song.title}*${song.artist ? ` - ${song.artist}` : ''}\n\nTonalidad: ${currentKey}\n\n${song.lyrics}\n\n_Enviado desde AVIVA Worship_`
+    const text = `*${song.title}*${song.artist ? ` - ${song.artist}` : ''}\n\nTonalidad: ${currentKey}\n\n${song.lyrics}\n\n_Enviado desde AVIVA Worship_`
 
     const url = `https://wa.me/?text=${encodeURIComponent(text)}`
     window.open(url, '_blank')
   }
-  
+
+  // Navigation functions for playlist context
+  function getPlaylistNavigation() {
+    if (!playlistContext || playlistContext.songs.length === 0) return null
+
+    const currentIdx = songIndex
+    const prevSong = currentIdx > 0 ? playlistContext.songs[currentIdx - 1] : null
+    const nextSong = currentIdx < playlistContext.songs.length - 1 ? playlistContext.songs[currentIdx + 1] : null
+
+    return { prevSong, nextSong, currentIdx, total: playlistContext.songs.length }
+  }
+
+  const navigation = getPlaylistNavigation()
+
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-6">
@@ -234,31 +309,97 @@ export default function SongPage({ params }: { params: Promise<{ id: string }> }
       </div>
     )
   }
-  
+
   if (!song) return null
-  
+
   const transposedLyrics = getTransposedLyrics()
   const formattedLyrics = formatLyricsForWrapping(transposedLyrics)
   const uniqueChords = extractChords(transposedLyrics)
-  
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
-      {/* Back Button */}
-      <button
-        onClick={() => router.back()}
-        className="flex items-center gap-2 text-aviva-text-muted hover:text-aviva-text mb-6 transition-colors"
-      >
-        <ArrowLeft size={20} />
-        <span>Volver</span>
-      </button>
-      
+      {/* Back Button and Playlist Context */}
+      <div className="flex items-center justify-between mb-6">
+        <button
+          onClick={() => router.back()}
+          className="flex items-center gap-2 text-aviva-text-muted hover:text-aviva-text transition-colors"
+        >
+          <ArrowLeft size={20} />
+          <span>Volver</span>
+        </button>
+
+        {playlistContext && (
+          <Link
+            href={`/listas/${playlistContext.id}`}
+            className="flex items-center gap-2 text-aviva-gold hover:text-aviva-gold-light transition-colors text-sm"
+          >
+            <List size={16} />
+            <span className="hidden sm:inline">{playlistContext.name}</span>
+            <span className="text-aviva-text-muted">
+              ({navigation?.currentIdx! + 1}/{navigation?.total})
+            </span>
+          </Link>
+        )}
+      </div>
+
+      {/* Playlist Navigation Bar */}
+      {navigation && (
+        <div className="bg-aviva-dark-lighter border border-aviva-gray rounded-2xl p-3 mb-6">
+          <div className="flex items-center justify-between">
+            {navigation.prevSong ? (
+              <Link
+                href={`/canciones/${navigation.prevSong.song.slug}?lista=${playlistContext!.id}&index=${navigation.currentIdx - 1}`}
+                className="flex items-center gap-2 px-3 py-2 rounded-xl bg-aviva-gray hover:bg-aviva-gray-light transition-colors"
+              >
+                <ChevronLeft size={20} />
+                <div className="hidden sm:block text-left">
+                  <p className="text-xs text-aviva-text-muted">Anterior</p>
+                  <p className="text-sm font-medium truncate max-w-[150px]">{navigation.prevSong.song.title}</p>
+                </div>
+              </Link>
+            ) : (
+              <div className="w-10" />
+            )}
+
+            <div className="flex items-center gap-1">
+              {playlistContext!.songs.map((_, idx) => (
+                <Link
+                  key={idx}
+                  href={`/canciones/${playlistContext!.songs[idx].song.slug}?lista=${playlistContext!.id}&index=${idx}`}
+                  className={`w-2 h-2 rounded-full transition-all ${
+                    idx === navigation.currentIdx
+                      ? 'bg-aviva-gold w-4'
+                      : 'bg-aviva-gray hover:bg-aviva-gray-light'
+                  }`}
+                />
+              ))}
+            </div>
+
+            {navigation.nextSong ? (
+              <Link
+                href={`/canciones/${navigation.nextSong.song.slug}?lista=${playlistContext!.id}&index=${navigation.currentIdx + 1}`}
+                className="flex items-center gap-2 px-3 py-2 rounded-xl bg-aviva-gold text-aviva-black hover:bg-aviva-gold-light transition-colors"
+              >
+                <div className="hidden sm:block text-right">
+                  <p className="text-xs opacity-70">Siguiente</p>
+                  <p className="text-sm font-medium truncate max-w-[150px]">{navigation.nextSong.song.title}</p>
+                </div>
+                <ChevronRight size={20} />
+              </Link>
+            ) : (
+              <div className="w-10" />
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Song Header */}
       <div className="flex flex-col sm:flex-row gap-6 mb-8">
         {/* Album Cover */}
         <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-2xl overflow-hidden bg-aviva-gray flex-shrink-0 mx-auto sm:mx-0">
           {song.albumCover ? (
-            <img 
-              src={song.albumCover} 
+            <img
+              src={song.albumCover}
               alt={song.album || song.title}
               className="w-full h-full object-cover"
             />
@@ -268,7 +409,7 @@ export default function SongPage({ params }: { params: Promise<{ id: string }> }
             </div>
           )}
         </div>
-        
+
         {/* Song Info */}
         <div className="flex-1 text-center sm:text-left">
           <h1 className="text-2xl sm:text-3xl font-bold mb-1">{song.title}</h1>
@@ -278,7 +419,7 @@ export default function SongPage({ params }: { params: Promise<{ id: string }> }
           {song.album && (
             <p className="text-sm text-aviva-text-muted mb-4">{song.album}</p>
           )}
-          
+
           {/* Metadata */}
           <div className="flex flex-wrap justify-center sm:justify-start gap-2 mb-4">
             <span className="px-3 py-1 rounded-full bg-aviva-gold/20 text-aviva-gold font-medium text-sm">
@@ -290,7 +431,7 @@ export default function SongPage({ params }: { params: Promise<{ id: string }> }
               </span>
             )}
           </div>
-          
+
           {/* External Links */}
           <div className="flex flex-wrap justify-center sm:justify-start gap-2">
             {song.spotifyUrl && (
@@ -333,21 +474,21 @@ export default function SongPage({ params }: { params: Promise<{ id: string }> }
           </div>
         </div>
       </div>
-      
+
       {/* Action Buttons */}
       <div className="flex flex-wrap gap-2 mb-6">
         <button
           onClick={toggleFavorite}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all ${
-            isFavorite 
-              ? 'bg-red-500/20 text-red-500' 
+            isFavorite
+              ? 'bg-red-500/20 text-red-500'
               : 'bg-aviva-gray text-aviva-text hover:bg-aviva-gray-light'
           }`}
         >
           <Heart size={18} fill={isFavorite ? 'currentColor' : 'none'} />
           {isFavorite ? 'Favorito' : 'Agregar'}
         </button>
-        
+
         <button
           onClick={() => setShowPlaylistModal(true)}
           className="flex items-center gap-2 px-4 py-2 rounded-xl bg-aviva-gray text-aviva-text hover:bg-aviva-gray-light font-medium transition-all"
@@ -355,7 +496,7 @@ export default function SongPage({ params }: { params: Promise<{ id: string }> }
           <ListPlus size={18} />
           A lista
         </button>
-        
+
         <button
           onClick={() => setShowShareModal(true)}
           className="flex items-center gap-2 px-4 py-2 rounded-xl bg-aviva-gray text-aviva-text hover:bg-aviva-gray-light font-medium transition-all"
@@ -364,7 +505,7 @@ export default function SongPage({ params }: { params: Promise<{ id: string }> }
           Compartir
         </button>
       </div>
-      
+
       {/* Transpose Controls */}
       <div className="bg-aviva-dark-lighter border border-aviva-gray rounded-2xl p-4 mb-6">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -396,7 +537,7 @@ export default function SongPage({ params }: { params: Promise<{ id: string }> }
               </button>
             )}
           </div>
-          
+
           <div className="flex items-center gap-2">
             <button
               onClick={() => setViewMode('chords')}
@@ -430,7 +571,7 @@ export default function SongPage({ params }: { params: Promise<{ id: string }> }
                 }`}
               >
                 <Music size={18} />
-                <span className="hidden sm:inline">Progresión</span>
+                <span className="hidden sm:inline">Progresion</span>
               </button>
             )}
           </div>
@@ -456,7 +597,7 @@ export default function SongPage({ params }: { params: Promise<{ id: string }> }
           </div>
         </div>
       )}
-      
+
       {/* Content based on view mode */}
       <div className="bg-aviva-dark-lighter border border-aviva-gray rounded-2xl p-4 sm:p-6">
         {viewMode === 'chords' && (
@@ -465,7 +606,6 @@ export default function SongPage({ params }: { params: Promise<{ id: string }> }
               <div key={lineIdx} className={`flex flex-wrap ${line.isEmptyLine ? 'h-4' : 'mb-1'}`}>
                 {line.chunks.map((chunk, chunkIdx) => (
                   <span key={chunkIdx} className="inline-flex flex-col">
-                    {/* Chord above */}
                     {chunk.chord ? (
                       <button
                         onClick={() => setSelectedChord(chunk.chord!)}
@@ -476,7 +616,6 @@ export default function SongPage({ params }: { params: Promise<{ id: string }> }
                     ) : line.hasChords ? (
                       <span className="h-5 sm:h-6">{'\u00A0'}</span>
                     ) : null}
-                    {/* Text below */}
                     <span className="whitespace-pre-wrap break-words">
                       {chunk.text || '\u00A0'}
                     </span>
@@ -522,13 +661,51 @@ export default function SongPage({ params }: { params: Promise<{ id: string }> }
           </div>
         )}
       </div>
-      
+
+      {/* Bottom Navigation for Playlist (mobile-friendly) */}
+      {navigation && (
+        <div className="fixed bottom-0 left-0 right-0 bg-aviva-dark-lighter border-t border-aviva-gray p-3 sm:hidden z-40">
+          <div className="flex items-center justify-between max-w-4xl mx-auto">
+            {navigation.prevSong ? (
+              <Link
+                href={`/canciones/${navigation.prevSong.song.slug}?lista=${playlistContext!.id}&index=${navigation.currentIdx - 1}`}
+                className="flex items-center gap-1 px-3 py-2 rounded-xl bg-aviva-gray"
+              >
+                <ChevronLeft size={20} />
+                <span className="text-sm">Anterior</span>
+              </Link>
+            ) : (
+              <div />
+            )}
+
+            <span className="text-sm text-aviva-text-muted">
+              {navigation.currentIdx + 1} / {navigation.total}
+            </span>
+
+            {navigation.nextSong ? (
+              <Link
+                href={`/canciones/${navigation.nextSong.song.slug}?lista=${playlistContext!.id}&index=${navigation.currentIdx + 1}`}
+                className="flex items-center gap-1 px-3 py-2 rounded-xl bg-aviva-gold text-aviva-black"
+              >
+                <span className="text-sm">Siguiente</span>
+                <ChevronRight size={20} />
+              </Link>
+            ) : (
+              <div />
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Add padding at bottom when navigation bar is shown */}
+      {navigation && <div className="h-16 sm:hidden" />}
+
       {/* Chord Modal */}
-      <ChordModal 
-        chord={selectedChord} 
-        onClose={() => setSelectedChord(null)} 
+      <ChordModal
+        chord={selectedChord}
+        onClose={() => setSelectedChord(null)}
       />
-      
+
       {/* Playlist Modal */}
       <Modal
         isOpen={showPlaylistModal}
@@ -565,12 +742,12 @@ export default function SongPage({ params }: { params: Promise<{ id: string }> }
           </div>
         )}
       </Modal>
-      
+
       {/* Share Modal */}
       <Modal
         isOpen={showShareModal}
         onClose={() => setShowShareModal(false)}
-        title="Compartir canción"
+        title="Compartir cancion"
       >
         <div className="space-y-3">
           <button
@@ -582,14 +759,14 @@ export default function SongPage({ params }: { params: Promise<{ id: string }> }
             </svg>
             <span className="font-medium">Enviar por WhatsApp</span>
           </button>
-          
+
           <button
             onClick={copyLyrics}
             className="w-full flex items-center gap-3 p-4 rounded-xl bg-aviva-gray hover:bg-aviva-gray-light transition-colors"
           >
             {copied ? <Check className="w-6 h-6 text-green-500" /> : <Copy className="w-6 h-6" />}
             <span className="font-medium">
-              {copied ? '¡Copiado!' : 'Copiar letra'}
+              {copied ? 'Copiado!' : 'Copiar letra'}
             </span>
           </button>
         </div>
@@ -597,4 +774,3 @@ export default function SongPage({ params }: { params: Promise<{ id: string }> }
     </div>
   )
 }
-

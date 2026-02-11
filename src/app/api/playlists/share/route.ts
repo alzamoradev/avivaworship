@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     
-    const { playlistId, email, canEdit = false } = await request.json()
+    const { playlistId, email, canEdit = true } = await request.json()
     
     // Check ownership
     const playlist = await prisma.playlist.findUnique({

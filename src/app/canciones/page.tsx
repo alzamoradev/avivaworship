@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { Search, Music, ArrowDownAZ, ArrowUpZA } from 'lucide-react'
 import { SongCard } from '@/components/ui/SongCard'
+import { Modal } from '@/components/ui/Modal'
 import { useToast } from '@/components/ui/Toast'
 
 interface Song {
@@ -16,22 +17,30 @@ interface Song {
   originalKey: string
 }
 
+interface Playlist {
+  id: string
+  name: string
+  _count?: { songs: number }
+}
+
 type SortOrder = 'title_asc' | 'title_desc'
 
 export default function CancionesPage() {
   const { data: session } = useSession()
   const { showToast } = useToast()
   const [songs, setSongs] = useState<Song[]>([])
-  const [favorites, setFavorites] = useState<Set<string>>(new Set())
+  const [playlists, setPlaylists] = useState<Playlist[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [filter, setFilter] = useState<'all' | 'featured'>('all')
   const [sortOrder, setSortOrder] = useState<SortOrder>('title_asc')
+  const [showPlaylistModal, setShowPlaylistModal] = useState(false)
+  const [selectedSongId, setSelectedSongId] = useState<string | null>(null)
 
   useEffect(() => {
     fetchSongs()
     if (session?.user?.id) {
-      fetchFavorites()
+      fetchPlaylists()
     }
   }, [session, filter, sortOrder])
 
@@ -53,47 +62,47 @@ export default function CancionesPage() {
     }
   }
 
-  async function fetchFavorites() {
+  async function fetchPlaylists() {
     try {
-      const res = await fetch('/api/favorites')
+      const res = await fetch('/api/playlists')
       if (res.ok) {
         const data = await res.json()
-        setFavorites(new Set(data.favorites.map((f: { songId: string }) => f.songId)))
+        setPlaylists(data.playlists || [])
       }
     } catch (error) {
-      console.error('Error fetching favorites:', error)
+      console.error('Error fetching playlists:', error)
     }
   }
 
-  async function toggleFavorite(songId: string) {
+  function handleAddToPlaylist(songId: string) {
     if (!session) {
-      showToast('Inicia sesion para guardar favoritos', 'warning')
+      showToast('Inicia sesion para agregar a una lista', 'warning')
       return
     }
+    setSelectedSongId(songId)
+    setShowPlaylistModal(true)
+  }
+
+  async function addSongToPlaylist(playlistId: string) {
+    if (!selectedSongId) return
 
     try {
-      const res = await fetch('/api/favorites', {
+      const res = await fetch(`/api/playlists/${playlistId}/songs`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ songId }),
+        body: JSON.stringify({ songId: selectedSongId }),
       })
 
       if (res.ok) {
+        showToast('Cancion agregada a la lista', 'success')
+        setShowPlaylistModal(false)
+        setSelectedSongId(null)
+      } else {
         const data = await res.json()
-        setFavorites(prev => {
-          const newSet = new Set(prev)
-          if (data.favorited) {
-            newSet.add(songId)
-            showToast('Agregado a favoritos', 'success')
-          } else {
-            newSet.delete(songId)
-            showToast('Eliminado de favoritos', 'info')
-          }
-          return newSet
-        })
+        showToast(data.error || 'Error al agregar', 'error')
       }
     } catch (error) {
-      showToast('Error al actualizar favoritos', 'error')
+      showToast('Error al agregar cancion', 'error')
     }
   }
 
@@ -177,8 +186,7 @@ export default function CancionesPage() {
             <SongCard
               key={song.id}
               song={song}
-              isFavorite={favorites.has(song.id)}
-              onToggleFavorite={toggleFavorite}
+              onAddToPlaylist={handleAddToPlaylist}
             />
           ))
         ) : (
@@ -190,6 +198,40 @@ export default function CancionesPage() {
           </div>
         )}
       </div>
+
+      {/* Playlist Selection Modal */}
+      <Modal
+        isOpen={showPlaylistModal}
+        onClose={() => {
+          setShowPlaylistModal(false)
+          setSelectedSongId(null)
+        }}
+        title="Agregar a lista"
+      >
+        {playlists.length > 0 ? (
+          <div className="space-y-2">
+            {playlists.map(playlist => (
+              <button
+                key={playlist.id}
+                onClick={() => addSongToPlaylist(playlist.id)}
+                className="w-full flex items-center justify-between p-4 rounded-xl bg-aviva-gray hover:bg-aviva-gray-light transition-colors"
+              >
+                <span className="font-medium">{playlist.name}</span>
+                <span className="text-sm text-aviva-text-muted">
+                  {playlist._count?.songs || 0} canciones
+                </span>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <p className="text-aviva-text-muted mb-4">No tienes listas creadas</p>
+            <a href="/listas" className="btn-primary inline-block">
+              Crear lista
+            </a>
+          </div>
+        )}
+      </Modal>
     </div>
   )
 }
