@@ -195,7 +195,8 @@ export default function PlaylistPlayPage({ params }: { params: Promise<{ id: str
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 bg-aviva-black flex flex-col"
+      className="fixed inset-0 bg-aviva-black flex flex-col safe-area-inset"
+      style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -269,8 +270,8 @@ export default function PlaylistPlayPage({ params }: { params: Promise<{ id: str
       </div>
 
       {/* Lyrics Content */}
-      <div className="flex-1 overflow-y-auto p-4">
-        <div className="font-mono text-sm sm:text-base leading-relaxed max-w-3xl mx-auto">
+      <div className="flex-1 overflow-y-auto p-4 pt-2">
+        <div className="font-mono text-sm sm:text-base leading-relaxed max-w-3xl mx-auto mt-2">
           {formattedLyrics.map((line, lineIdx) => (
             <div key={lineIdx} className={`flex flex-wrap ${line.isEmptyLine ? 'h-4' : 'mb-1'}`}>
               {line.chunks.map((chunk, chunkIdx) => (

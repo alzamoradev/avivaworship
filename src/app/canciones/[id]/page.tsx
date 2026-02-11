@@ -613,7 +613,7 @@ export default function SongPage({ params }: { params: Promise<{ id: string }> }
 
       {/* Floating Playlist Navigation */}
       {navigation && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40">
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-40">
           <div className="flex items-center gap-1 bg-aviva-dark-lighter/95 backdrop-blur-sm border border-aviva-gray rounded-full px-2 py-1.5 shadow-lg">
             {navigation.prevSong ? (
               <Link
