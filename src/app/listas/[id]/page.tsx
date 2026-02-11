@@ -3,14 +3,15 @@
 import { useState, useEffect, use } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { 
-  ArrowLeft, 
-  Share2, 
-  Edit2, 
-  Plus, 
-  Users, 
+import {
+  ArrowLeft,
+  Share2,
+  Edit2,
+  Plus,
+  Users,
   Music,
-  Trash2
+  Trash2,
+  Play
 } from 'lucide-react'
 import { SongCardCompact } from '@/components/ui/SongCard'
 import { Modal } from '@/components/ui/Modal'
@@ -281,6 +282,15 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
           
           {/* Actions */}
           <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+            {playlist.songs.length > 0 && (
+              <button
+                onClick={() => router.push(`/listas/${playlist.id}/tocar`)}
+                className="btn-primary flex items-center justify-center gap-1.5 text-sm px-3 py-2"
+              >
+                <Play size={16} fill="currentColor" />
+                <span>Tocar</span>
+              </button>
+            )}
             {playlist.isOwner && (
               <>
                 <button
@@ -305,7 +315,7 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
                   fetchAvailableSongs()
                   setShowAddSongModal(true)
                 }}
-                className="btn-primary flex items-center justify-center gap-1.5 text-sm px-3 py-2"
+                className="btn-secondary flex items-center justify-center gap-1.5 text-sm px-3 py-2"
               >
                 <Plus size={16} />
                 <span>Agregar</span>

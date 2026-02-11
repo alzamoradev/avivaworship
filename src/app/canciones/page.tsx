@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
-import { Search, Filter, Music } from 'lucide-react'
+import { Search, Music, ArrowDownAZ, ArrowUpZA } from 'lucide-react'
 import { SongCard } from '@/components/ui/SongCard'
 import { useToast } from '@/components/ui/Toast'
 
@@ -16,6 +16,8 @@ interface Song {
   originalKey: string
 }
 
+type SortOrder = 'title_asc' | 'title_desc'
+
 export default function CancionesPage() {
   const { data: session } = useSession()
   const { showToast } = useToast()
@@ -24,19 +26,21 @@ export default function CancionesPage() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [filter, setFilter] = useState<'all' | 'featured'>('all')
-  
+  const [sortOrder, setSortOrder] = useState<SortOrder>('title_asc')
+
   useEffect(() => {
     fetchSongs()
     if (session?.user?.id) {
       fetchFavorites()
     }
-  }, [session, filter])
-  
+  }, [session, filter, sortOrder])
+
   async function fetchSongs() {
     try {
       const params = new URLSearchParams()
       if (filter === 'featured') params.set('featured', 'true')
-      
+      params.set('sort', sortOrder)
+
       const res = await fetch(`/api/songs?${params}`)
       if (res.ok) {
         const data = await res.json()
@@ -48,7 +52,7 @@ export default function CancionesPage() {
       setLoading(false)
     }
   }
-  
+
   async function fetchFavorites() {
     try {
       const res = await fetch('/api/favorites')
@@ -60,20 +64,20 @@ export default function CancionesPage() {
       console.error('Error fetching favorites:', error)
     }
   }
-  
+
   async function toggleFavorite(songId: string) {
     if (!session) {
-      showToast('Inicia sesión para guardar favoritos', 'warning')
+      showToast('Inicia sesion para guardar favoritos', 'warning')
       return
     }
-    
+
     try {
       const res = await fetch('/api/favorites', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ songId }),
       })
-      
+
       if (res.ok) {
         const data = await res.json()
         setFavorites(prev => {
@@ -92,13 +96,17 @@ export default function CancionesPage() {
       showToast('Error al actualizar favoritos', 'error')
     }
   }
-  
-  const filteredSongs = songs.filter(song => 
+
+  function toggleSortOrder() {
+    setSortOrder(prev => prev === 'title_asc' ? 'title_desc' : 'title_asc')
+  }
+
+  const filteredSongs = songs.filter(song =>
     song.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     song.artist?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     song.album?.toLowerCase().includes(searchQuery.toLowerCase())
   )
-  
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
       {/* Header */}
@@ -108,7 +116,7 @@ export default function CancionesPage() {
           {songs.length} canciones disponibles
         </p>
       </div>
-      
+
       {/* Search and Filter */}
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <div className="relative flex-1">
@@ -121,7 +129,7 @@ export default function CancionesPage() {
             className="input-aviva pl-11"
           />
         </div>
-        
+
         <div className="flex gap-2">
           <button
             onClick={() => setFilter('all')}
@@ -143,9 +151,21 @@ export default function CancionesPage() {
           >
             Destacadas
           </button>
+          <button
+            onClick={toggleSortOrder}
+            className="px-4 py-2 rounded-xl bg-aviva-gray text-aviva-text hover:bg-aviva-gray-light transition-all flex items-center gap-2"
+            title={sortOrder === 'title_asc' ? 'Ordenar Z-A' : 'Ordenar A-Z'}
+          >
+            {sortOrder === 'title_asc' ? (
+              <ArrowDownAZ size={20} />
+            ) : (
+              <ArrowUpZA size={20} />
+            )}
+            <span className="hidden sm:inline">{sortOrder === 'title_asc' ? 'A-Z' : 'Z-A'}</span>
+          </button>
         </div>
       </div>
-      
+
       {/* Songs List */}
       <div className="space-y-3">
         {loading ? (
@@ -173,4 +193,3 @@ export default function CancionesPage() {
     </div>
   )
 }
-

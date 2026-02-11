@@ -10,11 +10,12 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams
     const query = searchParams.get('q')
     const featured = searchParams.get('featured') === 'true'
-    const limit = parseInt(searchParams.get('limit') || '50')
+    const limit = parseInt(searchParams.get('limit') || '100')
     const offset = parseInt(searchParams.get('offset') || '0')
-    
+    const sort = searchParams.get('sort') || 'title_asc' // title_asc, title_desc, recent
+
     const where: any = {}
-    
+
     if (query) {
       where.OR = [
         { title: { contains: query, mode: 'insensitive' } },
@@ -22,15 +23,23 @@ export async function GET(request: NextRequest) {
         { album: { contains: query, mode: 'insensitive' } },
       ]
     }
-    
+
     if (featured) {
       where.isFeatured = true
     }
-    
+
+    // Determine sort order
+    let orderBy: any = { title: 'asc' } // Default A-Z
+    if (sort === 'title_desc') {
+      orderBy = { title: 'desc' }
+    } else if (sort === 'recent') {
+      orderBy = { createdAt: 'desc' }
+    }
+
     const [songs, total] = await Promise.all([
       prisma.song.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
+        orderBy,
         take: limit,
         skip: offset,
         select: {
@@ -48,7 +57,7 @@ export async function GET(request: NextRequest) {
       }),
       prisma.song.count({ where }),
     ])
-    
+
     return NextResponse.json({ songs, total })
   } catch (error) {
     console.error('Error fetching songs:', error)

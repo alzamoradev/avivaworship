@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Heart, Play, MoreVertical } from 'lucide-react'
+import { Heart, Play, MoreVertical, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 
 interface Song {
@@ -137,12 +137,12 @@ export function SongCard({
 }
 
 // Compact version for playlists
-export function SongCardCompact({ 
-  song, 
+export function SongCardCompact({
+  song,
   index,
   onRemove,
   customKey
-}: { 
+}: {
   song: Song
   index?: number
   onRemove?: () => void
@@ -155,12 +155,12 @@ export function SongCardCompact({
           {index + 1}
         </span>
       )}
-      
+
       <Link href={`/canciones/${song.slug}`} className="flex items-center gap-3 flex-1 min-w-0">
         <div className="w-10 h-10 rounded-lg overflow-hidden bg-aviva-gray flex-shrink-0">
           {song.albumCover ? (
-            <img 
-              src={song.albumCover} 
+            <img
+              src={song.albumCover}
               alt={song.title}
               className="w-full h-full object-cover"
             />
@@ -172,25 +172,26 @@ export function SongCardCompact({
             </div>
           )}
         </div>
-        
+
         <div className="flex-1 min-w-0">
           <h4 className="font-medium text-aviva-text truncate group-hover:text-aviva-gold transition-colors">
             {song.title}
           </h4>
           <p className="text-sm text-aviva-text-muted truncate">{song.artist}</p>
         </div>
-        
+
         <span className="text-xs px-2 py-0.5 rounded-full bg-aviva-gold/20 text-aviva-gold font-medium">
           {customKey || song.originalKey}
         </span>
       </Link>
-      
+
       {onRemove && (
         <button
           onClick={onRemove}
-          className="opacity-0 group-hover:opacity-100 p-2 text-aviva-text-muted hover:text-red-500 transition-all"
+          className="p-2 text-aviva-text-muted hover:text-red-500 transition-all sm:opacity-0 sm:group-hover:opacity-100"
+          title="Eliminar de la lista"
         >
-          ×
+          <Trash2 size={18} />
         </button>
       )}
     </div>
