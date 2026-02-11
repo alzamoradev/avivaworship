@@ -342,57 +342,6 @@ export default function SongPage({ params }: { params: Promise<{ id: string }> }
         )}
       </div>
 
-      {/* Playlist Navigation Bar */}
-      {navigation && (
-        <div className="bg-aviva-dark-lighter border border-aviva-gray rounded-2xl p-3 mb-6">
-          <div className="flex items-center justify-between">
-            {navigation.prevSong ? (
-              <Link
-                href={`/canciones/${navigation.prevSong.song.slug}?lista=${playlistContext!.id}&index=${navigation.currentIdx - 1}`}
-                className="flex items-center gap-2 px-3 py-2 rounded-xl bg-aviva-gray hover:bg-aviva-gray-light transition-colors"
-              >
-                <ChevronLeft size={20} />
-                <div className="hidden sm:block text-left">
-                  <p className="text-xs text-aviva-text-muted">Anterior</p>
-                  <p className="text-sm font-medium truncate max-w-[150px]">{navigation.prevSong.song.title}</p>
-                </div>
-              </Link>
-            ) : (
-              <div className="w-10" />
-            )}
-
-            <div className="flex items-center gap-1">
-              {playlistContext!.songs.map((_, idx) => (
-                <Link
-                  key={idx}
-                  href={`/canciones/${playlistContext!.songs[idx].song.slug}?lista=${playlistContext!.id}&index=${idx}`}
-                  className={`w-2 h-2 rounded-full transition-all ${
-                    idx === navigation.currentIdx
-                      ? 'bg-aviva-gold w-4'
-                      : 'bg-aviva-gray hover:bg-aviva-gray-light'
-                  }`}
-                />
-              ))}
-            </div>
-
-            {navigation.nextSong ? (
-              <Link
-                href={`/canciones/${navigation.nextSong.song.slug}?lista=${playlistContext!.id}&index=${navigation.currentIdx + 1}`}
-                className="flex items-center gap-2 px-3 py-2 rounded-xl bg-aviva-gold text-aviva-black hover:bg-aviva-gold-light transition-colors"
-              >
-                <div className="hidden sm:block text-right">
-                  <p className="text-xs opacity-70">Siguiente</p>
-                  <p className="text-sm font-medium truncate max-w-[150px]">{navigation.nextSong.song.title}</p>
-                </div>
-                <ChevronRight size={20} />
-              </Link>
-            ) : (
-              <div className="w-10" />
-            )}
-          </div>
-        </div>
-      )}
-
       {/* Song Header */}
       <div className="flex flex-col sm:flex-row gap-6 mb-8">
         {/* Album Cover */}
@@ -662,43 +611,47 @@ export default function SongPage({ params }: { params: Promise<{ id: string }> }
         )}
       </div>
 
-      {/* Bottom Navigation for Playlist (mobile-friendly) */}
+      {/* Floating Playlist Navigation */}
       {navigation && (
-        <div className="fixed bottom-0 left-0 right-0 bg-aviva-dark-lighter border-t border-aviva-gray p-3 sm:hidden z-40">
-          <div className="flex items-center justify-between max-w-4xl mx-auto">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40">
+          <div className="flex items-center gap-1 bg-aviva-dark-lighter/95 backdrop-blur-sm border border-aviva-gray rounded-full px-2 py-1.5 shadow-lg">
             {navigation.prevSong ? (
               <Link
                 href={`/canciones/${navigation.prevSong.song.slug}?lista=${playlistContext!.id}&index=${navigation.currentIdx - 1}`}
-                className="flex items-center gap-1 px-3 py-2 rounded-xl bg-aviva-gray"
+                className="p-2 rounded-full hover:bg-aviva-gray transition-colors"
+                title="Anterior"
               >
                 <ChevronLeft size={20} />
-                <span className="text-sm">Anterior</span>
               </Link>
             ) : (
-              <div />
+              <div className="p-2 text-aviva-text-muted/30">
+                <ChevronLeft size={20} />
+              </div>
             )}
 
-            <span className="text-sm text-aviva-text-muted">
+            <span className="px-3 text-sm font-medium text-aviva-text-muted">
               {navigation.currentIdx + 1} / {navigation.total}
             </span>
 
             {navigation.nextSong ? (
               <Link
                 href={`/canciones/${navigation.nextSong.song.slug}?lista=${playlistContext!.id}&index=${navigation.currentIdx + 1}`}
-                className="flex items-center gap-1 px-3 py-2 rounded-xl bg-aviva-gold text-aviva-black"
+                className="p-2 rounded-full bg-aviva-gold text-aviva-black hover:bg-aviva-gold-light transition-colors"
+                title="Siguiente"
               >
-                <span className="text-sm">Siguiente</span>
                 <ChevronRight size={20} />
               </Link>
             ) : (
-              <div />
+              <div className="p-2 text-aviva-text-muted/30">
+                <ChevronRight size={20} />
+              </div>
             )}
           </div>
         </div>
       )}
 
-      {/* Add padding at bottom when navigation bar is shown */}
-      {navigation && <div className="h-16 sm:hidden" />}
+      {/* Add padding at bottom when navigation is shown */}
+      {navigation && <div className="h-20" />}
 
       {/* Chord Modal */}
       <ChordModal
