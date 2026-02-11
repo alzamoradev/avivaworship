@@ -25,7 +25,7 @@ import {
   getAllKeys,
   getSemitones,
   extractChords,
-  formatLyricsWithChords,
+  formatLyricsWithChordsAbove,
   getLyricsOnly,
   transposeChordProgression,
   formatChordProgression
@@ -238,7 +238,7 @@ export default function SongPage({ params }: { params: Promise<{ id: string }> }
   if (!song) return null
   
   const transposedLyrics = getTransposedLyrics()
-  const formattedLyrics = formatLyricsWithChords(transposedLyrics)
+  const formattedLyrics = formatLyricsWithChordsAbove(transposedLyrics)
   const uniqueChords = extractChords(transposedLyrics)
   
   return (
@@ -458,24 +458,30 @@ export default function SongPage({ params }: { params: Promise<{ id: string }> }
       )}
       
       {/* Content based on view mode */}
-      <div className="bg-aviva-dark-lighter border border-aviva-gray rounded-2xl p-6">
+      <div className="bg-aviva-dark-lighter border border-aviva-gray rounded-2xl p-6 overflow-x-auto">
         {viewMode === 'chords' && (
-          <div className="lyrics-line font-mono">
+          <div className="font-mono text-base leading-relaxed min-w-fit">
             {formattedLyrics.map((line, lineIdx) => (
-              <div key={lineIdx} className="min-h-[1.5em]">
-                {line.map((part, partIdx) => (
-                  part.type === 'chord' ? (
-                    <button
-                      key={partIdx}
-                      onClick={() => setSelectedChord(part.content)}
-                      className="chord"
-                    >
-                      {part.content}
-                    </button>
-                  ) : (
-                    <span key={partIdx}>{part.content}</span>
-                  )
-                ))}
+              <div key={lineIdx} className="mb-1">
+                {/* Chord line */}
+                {line.hasChords && (
+                  <div className="text-aviva-gold font-bold h-6 whitespace-pre relative">
+                    {line.chordLine.map((chordItem, chordIdx) => (
+                      <button
+                        key={chordIdx}
+                        onClick={() => setSelectedChord(chordItem.chord)}
+                        className="absolute hover:text-aviva-gold-light transition-colors"
+                        style={{ left: `${chordItem.position}ch` }}
+                      >
+                        {chordItem.chord}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {/* Text line */}
+                <div className={`whitespace-pre ${!line.hasChords && !line.textLine.trim() ? 'h-4' : ''}`}>
+                  {line.textLine || '\u00A0'}
+                </div>
               </div>
             ))}
           </div>

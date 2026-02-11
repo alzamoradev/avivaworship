@@ -174,7 +174,48 @@ export function extractChords(lyrics: string): string[] {
   return Array.from(chords)
 }
 
-// Formatear letra con acordes para visualización
+// Formatear letra con acordes para visualización (acordes arriba de la letra)
+export interface FormattedLine {
+  chordLine: { chord: string; position: number }[]
+  textLine: string
+  hasChords: boolean
+}
+
+export function formatLyricsWithChordsAbove(lyrics: string): FormattedLine[] {
+  const lines = lyrics.split('\n')
+
+  return lines.map(line => {
+    const chords: { chord: string; position: number }[] = []
+    let textLine = ''
+    let textPosition = 0
+    let lastIndex = 0
+    const chordRegex = /\[([A-G][#b]?[^[\]]*)\]/g
+    let match
+
+    while ((match = chordRegex.exec(line)) !== null) {
+      // Add text before this chord
+      const textBefore = line.slice(lastIndex, match.index)
+      textLine += textBefore
+      textPosition += textBefore.length
+
+      // Record chord position (where it appears in the clean text)
+      chords.push({ chord: match[1], position: textPosition })
+
+      lastIndex = match.index + match[0].length
+    }
+
+    // Add remaining text after last chord
+    textLine += line.slice(lastIndex)
+
+    return {
+      chordLine: chords,
+      textLine,
+      hasChords: chords.length > 0
+    }
+  })
+}
+
+// Legacy function for backwards compatibility
 export function formatLyricsWithChords(lyrics: string): { type: 'chord' | 'text', content: string }[][] {
   const lines = lyrics.split('\n')
   return lines.map(line => {
@@ -182,7 +223,7 @@ export function formatLyricsWithChords(lyrics: string): { type: 'chord' | 'text'
     let lastIndex = 0
     const chordRegex = /\[([A-G][#b]?[^[\]]*)\]/g
     let match
-    
+
     while ((match = chordRegex.exec(line)) !== null) {
       if (match.index > lastIndex) {
         parts.push({ type: 'text', content: line.slice(lastIndex, match.index) })
@@ -190,15 +231,15 @@ export function formatLyricsWithChords(lyrics: string): { type: 'chord' | 'text'
       parts.push({ type: 'chord', content: match[1] })
       lastIndex = match.index + match[0].length
     }
-    
+
     if (lastIndex < line.length) {
       parts.push({ type: 'text', content: line.slice(lastIndex) })
     }
-    
+
     if (parts.length === 0) {
       parts.push({ type: 'text', content: '' })
     }
-    
+
     return parts
   })
 }
