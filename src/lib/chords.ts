@@ -215,6 +215,68 @@ export function formatLyricsWithChordsAbove(lyrics: string): FormattedLine[] {
   })
 }
 
+// Chunk para renderizar con acordes arriba permitiendo wrap
+export interface LyricsChunk {
+  chord: string | null  // Acorde que va arriba de este texto (si hay)
+  text: string          // Texto de este chunk
+}
+
+export interface WrappableLine {
+  chunks: LyricsChunk[]
+  hasChords: boolean
+  isEmptyLine: boolean
+}
+
+// Formatear letra en chunks que permiten wrap natural
+export function formatLyricsForWrapping(lyrics: string): WrappableLine[] {
+  const lines = lyrics.split('\n')
+
+  return lines.map(line => {
+    const chunks: LyricsChunk[] = []
+    let lastIndex = 0
+    const chordRegex = /\[([A-G][#b]?[^[\]]*)\]/g
+    let match
+    let hasChords = false
+
+    while ((match = chordRegex.exec(line)) !== null) {
+      hasChords = true
+
+      // Texto antes del acorde (sin acorde asociado)
+      if (match.index > lastIndex) {
+        const textBefore = line.slice(lastIndex, match.index)
+        if (textBefore) {
+          chunks.push({ chord: null, text: textBefore })
+        }
+      }
+
+      // Buscar el próximo acorde o fin de línea para saber cuánto texto va con este acorde
+      const nextMatch = chordRegex.exec(line)
+      const endIndex = nextMatch ? nextMatch.index : line.length
+
+      // Retroceder el regex para que la próxima iteración lo encuentre
+      if (nextMatch) {
+        chordRegex.lastIndex = nextMatch.index
+      }
+
+      const textWithChord = line.slice(match.index + match[0].length, endIndex)
+      chunks.push({ chord: match[1], text: textWithChord })
+
+      lastIndex = endIndex
+    }
+
+    // Si no hubo acordes, toda la línea es un chunk sin acorde
+    if (!hasChords) {
+      chunks.push({ chord: null, text: line })
+    }
+
+    return {
+      chunks,
+      hasChords,
+      isEmptyLine: line.trim() === ''
+    }
+  })
+}
+
 // Legacy function for backwards compatibility
 export function formatLyricsWithChords(lyrics: string): { type: 'chord' | 'text', content: string }[][] {
   const lines = lyrics.split('\n')

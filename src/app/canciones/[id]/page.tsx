@@ -25,7 +25,7 @@ import {
   getAllKeys,
   getSemitones,
   extractChords,
-  formatLyricsWithChordsAbove,
+  formatLyricsForWrapping,
   getLyricsOnly,
   transposeChordProgression,
   formatChordProgression
@@ -238,7 +238,7 @@ export default function SongPage({ params }: { params: Promise<{ id: string }> }
   if (!song) return null
   
   const transposedLyrics = getTransposedLyrics()
-  const formattedLyrics = formatLyricsWithChordsAbove(transposedLyrics)
+  const formattedLyrics = formatLyricsForWrapping(transposedLyrics)
   const uniqueChords = extractChords(transposedLyrics)
   
   return (
@@ -458,37 +458,37 @@ export default function SongPage({ params }: { params: Promise<{ id: string }> }
       )}
       
       {/* Content based on view mode */}
-      <div className="bg-aviva-dark-lighter border border-aviva-gray rounded-2xl p-6 overflow-x-auto">
+      <div className="bg-aviva-dark-lighter border border-aviva-gray rounded-2xl p-4 sm:p-6">
         {viewMode === 'chords' && (
-          <div className="font-mono text-base leading-relaxed min-w-fit">
+          <div className="font-mono text-sm sm:text-base leading-relaxed">
             {formattedLyrics.map((line, lineIdx) => (
-              <div key={lineIdx} className="mb-1">
-                {/* Chord line */}
-                {line.hasChords && (
-                  <div className="text-aviva-gold font-bold h-6 whitespace-pre relative">
-                    {line.chordLine.map((chordItem, chordIdx) => (
+              <div key={lineIdx} className={`flex flex-wrap ${line.isEmptyLine ? 'h-4' : 'mb-1'}`}>
+                {line.chunks.map((chunk, chunkIdx) => (
+                  <span key={chunkIdx} className="inline-flex flex-col">
+                    {/* Chord above */}
+                    {chunk.chord ? (
                       <button
-                        key={chordIdx}
-                        onClick={() => setSelectedChord(chordItem.chord)}
-                        className="absolute hover:text-aviva-gold-light transition-colors"
-                        style={{ left: `${chordItem.position}ch` }}
+                        onClick={() => setSelectedChord(chunk.chord!)}
+                        className="text-aviva-gold font-bold hover:text-aviva-gold-light transition-colors text-left h-5 sm:h-6"
                       >
-                        {chordItem.chord}
+                        {chunk.chord}
                       </button>
-                    ))}
-                  </div>
-                )}
-                {/* Text line */}
-                <div className={`whitespace-pre ${!line.hasChords && !line.textLine.trim() ? 'h-4' : ''}`}>
-                  {line.textLine || '\u00A0'}
-                </div>
+                    ) : line.hasChords ? (
+                      <span className="h-5 sm:h-6">{'\u00A0'}</span>
+                    ) : null}
+                    {/* Text below */}
+                    <span className="whitespace-pre-wrap break-words">
+                      {chunk.text || '\u00A0'}
+                    </span>
+                  </span>
+                ))}
               </div>
             ))}
           </div>
         )}
 
         {viewMode === 'lyrics' && (
-          <div className="lyrics-only whitespace-pre-wrap text-lg">
+          <div className="lyrics-only whitespace-pre-wrap break-words text-base sm:text-lg">
             {song.lyrics}
           </div>
         )}
