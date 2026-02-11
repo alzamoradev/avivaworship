@@ -30,6 +30,7 @@ export function transposeChord(chord: string, semitones: number, useFlats: boole
 
 // Función para transponer toda una letra con acordes
 export function transposeLyrics(lyrics: string, semitones: number, useFlats: boolean = false): string {
+  if (!lyrics) return ''
   // Los acordes están entre corchetes: [Am] [G] [C]
   return lyrics.replace(/\[([A-G][#b]?[^[\]]*)\]/g, (match, chord) => {
     return `[${transposeChord(chord, semitones, useFlats)}]`
@@ -163,14 +164,15 @@ export function getChordDiagram(chord: string): ChordDiagram | null {
 
 // Extraer todos los acordes únicos de una letra
 export function extractChords(lyrics: string): string[] {
+  if (!lyrics) return []
   const chordRegex = /\[([A-G][#b]?[^[\]]*)\]/g
   const chords = new Set<string>()
   let match
-  
+
   while ((match = chordRegex.exec(lyrics)) !== null) {
     chords.add(match[1])
   }
-  
+
   return Array.from(chords)
 }
 
@@ -229,49 +231,59 @@ export interface WrappableLine {
 
 // Formatear letra en chunks que permiten wrap natural
 export function formatLyricsForWrapping(lyrics: string): WrappableLine[] {
+  if (!lyrics) {
+    return [{ chunks: [{ chord: null, text: '' }], hasChords: false, isEmptyLine: true }]
+  }
+
   const lines = lyrics.split('\n')
 
   return lines.map(line => {
     const chunks: LyricsChunk[] = []
-    let lastIndex = 0
     const chordRegex = /\[([A-G][#b]?[^[\]]*)\]/g
+
+    // Primero, encontrar todas las posiciones de acordes
+    const matches: { chord: string; index: number; length: number }[] = []
     let match
-    let hasChords = false
-
     while ((match = chordRegex.exec(line)) !== null) {
-      hasChords = true
-
-      // Texto antes del acorde (sin acorde asociado)
-      if (match.index > lastIndex) {
-        const textBefore = line.slice(lastIndex, match.index)
-        if (textBefore) {
-          chunks.push({ chord: null, text: textBefore })
-        }
-      }
-
-      // Buscar el próximo acorde o fin de línea para saber cuánto texto va con este acorde
-      const nextMatch = chordRegex.exec(line)
-      const endIndex = nextMatch ? nextMatch.index : line.length
-
-      // Retroceder el regex para que la próxima iteración lo encuentre
-      if (nextMatch) {
-        chordRegex.lastIndex = nextMatch.index
-      }
-
-      const textWithChord = line.slice(match.index + match[0].length, endIndex)
-      chunks.push({ chord: match[1], text: textWithChord })
-
-      lastIndex = endIndex
+      matches.push({
+        chord: match[1],
+        index: match.index,
+        length: match[0].length
+      })
     }
 
-    // Si no hubo acordes, toda la línea es un chunk sin acorde
-    if (!hasChords) {
-      chunks.push({ chord: null, text: line })
+    if (matches.length === 0) {
+      // No hay acordes, toda la linea es texto
+      return {
+        chunks: [{ chord: null, text: line }],
+        hasChords: false,
+        isEmptyLine: line.trim() === ''
+      }
+    }
+
+    // Procesar texto y acordes
+    let lastIndex = 0
+
+    for (let i = 0; i < matches.length; i++) {
+      const m = matches[i]
+      const nextMatch = matches[i + 1]
+
+      // Texto antes de este acorde (sin acorde)
+      if (m.index > lastIndex) {
+        chunks.push({ chord: null, text: line.slice(lastIndex, m.index) })
+      }
+
+      // Texto que va con este acorde (hasta el proximo acorde o fin de linea)
+      const textEnd = nextMatch ? nextMatch.index : line.length
+      const textWithChord = line.slice(m.index + m.length, textEnd)
+      chunks.push({ chord: m.chord, text: textWithChord })
+
+      lastIndex = textEnd
     }
 
     return {
       chunks,
-      hasChords,
+      hasChords: true,
       isEmptyLine: line.trim() === ''
     }
   })
