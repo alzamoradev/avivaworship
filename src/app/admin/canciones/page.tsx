@@ -84,7 +84,7 @@ export default function AdminCancionesPage() {
           s.id === songId ? { ...s, isFeatured: !currentValue } : s
         ))
         showToast(
-          !currentValue ? 'Marcada como destacada' : 'Ya no es destacada',
+          !currentValue ? 'Marcada como sugerida' : 'Ya no es sugerida',
           'success'
         )
       }
@@ -153,7 +153,7 @@ export default function AdminCancionesPage() {
                   <th className="text-left p-4 text-aviva-text-muted font-medium">Canción</th>
                   <th className="text-left p-4 text-aviva-text-muted font-medium hidden sm:table-cell">Artista</th>
                   <th className="text-left p-4 text-aviva-text-muted font-medium hidden md:table-cell">Tonalidad</th>
-                  <th className="text-center p-4 text-aviva-text-muted font-medium">Destacada</th>
+                  <th className="text-center p-4 text-aviva-text-muted font-medium">Sugerida</th>
                   <th className="text-right p-4 text-aviva-text-muted font-medium">Acciones</th>
                 </tr>
               </thead>

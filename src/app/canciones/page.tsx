@@ -158,7 +158,7 @@ export default function CancionesPage() {
                 : 'bg-aviva-gray text-aviva-text hover:bg-aviva-gray-light'
             }`}
           >
-            Destacadas
+            Sugeridas
           </button>
           <button
             onClick={toggleSortOrder}

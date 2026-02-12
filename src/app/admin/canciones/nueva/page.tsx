@@ -308,9 +308,9 @@ export default function NuevaCancionPage() {
               className="w-5 h-5 rounded border-aviva-gray text-aviva-gold focus:ring-aviva-gold"
             />
             <div>
-              <p className="font-medium">Destacar canción</p>
+              <p className="font-medium">Sugerir canción</p>
               <p className="text-sm text-aviva-text-muted">
-                Se mostrará en la sección destacada de la página principal
+                Se mostrará en la sección sugeridas de la página principal
               </p>
             </div>
           </label>
