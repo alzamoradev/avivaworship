@@ -142,9 +142,9 @@ export default function ListasPage() {
   
   function copyShareCode() {
     if (!selectedPlaylist?.shareCode) return
-
-    navigator.clipboard.writeText(selectedPlaylist.shareCode)
-    showToast('Código copiado', 'success')
+    const text = `🎶 Te invito a colaborar en mi lista "${selectedPlaylist.name}"\n\nCódigo: ${selectedPlaylist.shareCode}`
+    navigator.clipboard.writeText(text)
+    showToast('Invitación copiada', 'success')
   }
   
   if (status === 'loading' || loading) {

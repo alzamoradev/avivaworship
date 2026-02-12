@@ -384,8 +384,9 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
 
   function copyShareCode() {
     if (!playlist?.shareCode) return
-    navigator.clipboard.writeText(playlist.shareCode)
-    showToast('Código copiado', 'success')
+    const text = `🎶 Te invito a colaborar en mi lista "${playlist.name}"\n\nCódigo: ${playlist.shareCode}`
+    navigator.clipboard.writeText(text)
+    showToast('Invitación copiada', 'success')
   }
 
   if (loading) {

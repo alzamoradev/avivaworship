@@ -277,7 +277,7 @@ export default function SongPage({ params }: { params: Promise<{ id: string }> }
   function shareToWhatsApp() {
     if (!song) return
 
-    const text = `*${song.title}*${song.artist ? ` - ${song.artist}` : ''}\n\nTonalidad: ${currentKey}\n\n${song.lyrics}\n\n_Enviado desde AVIVA Worship_`
+    const text = `*${song.title}*${song.artist ? ` - ${song.artist}` : ''}\n\n${song.lyrics}\n\n_Enviado desde AVIVA Worship_`
 
     const url = `https://wa.me/?text=${encodeURIComponent(text)}`
     window.open(url, '_blank')
