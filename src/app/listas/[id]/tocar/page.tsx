@@ -1,11 +1,9 @@
 'use client'
 
-import { useState, useEffect, use, useRef, useCallback } from 'react'
+import { useState, useEffect, use, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   ArrowLeft,
-  ChevronLeft,
-  ChevronRight,
   ChevronUp,
   ChevronDown,
   List,
@@ -16,7 +14,6 @@ import {
   transposeLyrics,
   getAllKeys,
   getSemitones,
-  extractChords,
   formatLyricsForWrapping
 } from '@/lib/chords'
 
@@ -190,88 +187,64 @@ export default function PlaylistPlayPage({ params }: { params: Promise<{ id: str
   const semitones = getSemitones(song.originalKey, currentKey)
   const transposedLyrics = transposeLyrics(song.lyricsChords, semitones)
   const formattedLyrics = formatLyricsForWrapping(transposedLyrics)
-  const uniqueChords = extractChords(transposedLyrics)
 
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 bg-aviva-black flex flex-col safe-area-inset"
+      className="fixed inset-0 bg-aviva-black flex flex-col"
       style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Header */}
-      <div className="flex-shrink-0 bg-aviva-dark-lighter border-b border-aviva-gray px-4 py-3">
-        <div className="flex items-center justify-between gap-4">
+      {/* Compact Header */}
+      <div className="flex-shrink-0 bg-aviva-dark-lighter/90 backdrop-blur-sm border-b border-aviva-gray px-3 py-2">
+        <div className="flex items-center gap-2">
           <button
             onClick={() => router.back()}
-            className="p-2 text-aviva-text-muted hover:text-aviva-text transition-colors"
+            className="p-1.5 text-aviva-text-muted hover:text-aviva-text transition-colors"
           >
-            <ArrowLeft size={24} />
+            <ArrowLeft size={20} />
           </button>
 
-          <div className="flex-1 min-w-0 text-center">
-            <h1 className="font-bold truncate">{song.title}</h1>
-            <p className="text-sm text-aviva-text-muted truncate">
-              {currentIndex + 1} de {playlist.songs.length} - {playlist.name}
+          <div className="flex-1 min-w-0">
+            <h1 className="font-bold text-sm truncate">{song.title}</h1>
+            <p className="text-xs text-aviva-text-muted truncate">
+              {currentIndex + 1}/{playlist.songs.length} · {playlist.name}
             </p>
+          </div>
+
+          {/* Transpose Controls - Compact */}
+          <div className="flex items-center gap-1">
+            <button
+              onClick={transposeDown}
+              className="p-1.5 rounded-lg bg-aviva-gray hover:bg-aviva-gray-light transition-colors"
+            >
+              <ChevronDown size={16} />
+            </button>
+            <span className="w-8 text-center text-sm font-bold text-aviva-gold">
+              {currentKey}
+            </span>
+            <button
+              onClick={transposeUp}
+              className="p-1.5 rounded-lg bg-aviva-gray hover:bg-aviva-gray-light transition-colors"
+            >
+              <ChevronUp size={16} />
+            </button>
           </div>
 
           <button
             onClick={() => setShowSongList(true)}
-            className="p-2 text-aviva-text-muted hover:text-aviva-text transition-colors"
+            className="p-1.5 text-aviva-text-muted hover:text-aviva-text transition-colors"
           >
-            <List size={24} />
+            <List size={20} />
           </button>
         </div>
-
-        {/* Transpose Controls */}
-        <div className="flex items-center justify-center gap-4 mt-3">
-          <button
-            onClick={transposeDown}
-            className="p-2 rounded-lg bg-aviva-gray hover:bg-aviva-gray-light transition-colors"
-          >
-            <ChevronDown size={20} />
-          </button>
-          <span className="w-12 text-center text-xl font-bold text-aviva-gold">
-            {currentKey}
-          </span>
-          <button
-            onClick={transposeUp}
-            className="p-2 rounded-lg bg-aviva-gray hover:bg-aviva-gray-light transition-colors"
-          >
-            <ChevronUp size={20} />
-          </button>
-          {currentKey !== song.originalKey && (
-            <button
-              onClick={() => setCurrentKey(song.originalKey)}
-              className="text-sm text-aviva-gold hover:underline"
-            >
-              Original ({song.originalKey})
-            </button>
-          )}
-        </div>
-
-        {/* Chord Reference */}
-        {uniqueChords.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mt-3 justify-center">
-            {uniqueChords.map(chord => (
-              <button
-                key={chord}
-                onClick={() => setSelectedChord(chord)}
-                className="px-2 py-1 rounded-md bg-aviva-gold/20 text-aviva-gold font-mono text-sm font-bold hover:bg-aviva-gold/30 transition-colors"
-              >
-                {chord}
-              </button>
-            ))}
-          </div>
-        )}
       </div>
 
-      {/* Lyrics Content */}
-      <div className="flex-1 overflow-y-auto p-4 pt-2">
-        <div className="font-mono text-sm sm:text-base leading-relaxed max-w-3xl mx-auto mt-2">
+      {/* Lyrics Content - Full height */}
+      <div className="flex-1 overflow-y-auto p-4">
+        <div className="font-mono text-sm sm:text-base leading-relaxed max-w-3xl mx-auto">
           {formattedLyrics.map((line, lineIdx) => (
             <div key={lineIdx} className={`flex flex-wrap ${line.isEmptyLine ? 'h-4' : 'mb-1'}`}>
               {line.chunks.map((chunk, chunkIdx) => (
@@ -294,50 +267,10 @@ export default function PlaylistPlayPage({ params }: { params: Promise<{ id: str
             </div>
           ))}
         </div>
-      </div>
 
-      {/* Navigation Footer */}
-      <div className="flex-shrink-0 bg-aviva-dark-lighter border-t border-aviva-gray px-4 py-3">
-        <div className="flex items-center justify-between max-w-3xl mx-auto">
-          <button
-            onClick={goToPrevious}
-            disabled={currentIndex === 0}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all ${
-              currentIndex === 0
-                ? 'text-aviva-text-muted cursor-not-allowed'
-                : 'bg-aviva-gray hover:bg-aviva-gray-light text-aviva-text'
-            }`}
-          >
-            <ChevronLeft size={20} />
-            <span className="hidden sm:inline">Anterior</span>
-          </button>
-
-          <div className="flex gap-1">
-            {playlist.songs.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => goToSong(idx)}
-                className={`w-2 h-2 rounded-full transition-all ${
-                  idx === currentIndex
-                    ? 'bg-aviva-gold w-4'
-                    : 'bg-aviva-gray hover:bg-aviva-gray-light'
-                }`}
-              />
-            ))}
-          </div>
-
-          <button
-            onClick={goToNext}
-            disabled={currentIndex === playlist.songs.length - 1}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all ${
-              currentIndex === playlist.songs.length - 1
-                ? 'text-aviva-text-muted cursor-not-allowed'
-                : 'bg-aviva-gold text-aviva-black hover:bg-aviva-gold-light'
-            }`}
-          >
-            <span className="hidden sm:inline">Siguiente</span>
-            <ChevronRight size={20} />
-          </button>
+        {/* Swipe hint at bottom */}
+        <div className="text-center text-xs text-aviva-text-muted/50 mt-8 pb-4">
+          ← Desliza para cambiar canción →
         </div>
       </div>
 

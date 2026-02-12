@@ -11,11 +11,30 @@ import {
   Users,
   Music,
   Trash2,
-  Play
+  Play,
+  GripVertical
 } from 'lucide-react'
-import { SongCardCompact } from '@/components/ui/SongCard'
 import { Modal } from '@/components/ui/Modal'
 import { useToast } from '@/components/ui/Toast'
+import Link from 'next/link'
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent
+} from '@dnd-kit/core'
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 interface Song {
   id: string
@@ -64,12 +83,113 @@ interface Playlist {
   canEdit: boolean
 }
 
+// Sortable Song Item Component
+function SortableSongItem({
+  playlistSong,
+  index,
+  onRemove,
+  playlistId,
+  canEdit
+}: {
+  playlistSong: PlaylistSong
+  index: number
+  onRemove?: () => void
+  playlistId: string
+  canEdit: boolean
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({ id: playlistSong.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 1000 : 'auto'
+  }
+
+  const song = playlistSong.song
+  const songUrl = `/canciones/${song.slug}?lista=${playlistId}&index=${index}`
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`flex items-center gap-2 p-3 rounded-xl hover:bg-aviva-gray/50 transition-colors group ${
+        isDragging ? 'bg-aviva-gray shadow-lg' : ''
+      }`}
+    >
+      {/* Drag Handle */}
+      {canEdit && (
+        <button
+          {...attributes}
+          {...listeners}
+          className="p-1 text-aviva-text-muted hover:text-aviva-text cursor-grab active:cursor-grabbing touch-none"
+        >
+          <GripVertical size={18} />
+        </button>
+      )}
+
+      {/* Song Number */}
+      <span className="w-6 text-center text-aviva-text-muted text-sm font-medium">
+        {index + 1}
+      </span>
+
+      {/* Song Link */}
+      <Link href={songUrl} className="flex items-center gap-3 flex-1 min-w-0">
+        <div className="w-10 h-10 rounded-lg overflow-hidden bg-aviva-gray flex-shrink-0">
+          {song.albumCover ? (
+            <img
+              src={song.albumCover}
+              alt={song.title}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-aviva-gold/20 to-aviva-gold/5">
+              <span className="text-sm font-bold text-aviva-gold/50">
+                {song.title.charAt(0)}
+              </span>
+            </div>
+          )}
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <h4 className="font-medium text-aviva-text truncate group-hover:text-aviva-gold transition-colors">
+            {song.title}
+          </h4>
+          <p className="text-sm text-aviva-text-muted truncate">{song.artist}</p>
+        </div>
+
+        <span className="text-xs px-2 py-0.5 rounded-full bg-aviva-gold/20 text-aviva-gold font-medium">
+          {playlistSong.customKey || song.originalKey}
+        </span>
+      </Link>
+
+      {/* Remove Button */}
+      {onRemove && (
+        <button
+          onClick={onRemove}
+          className="p-2 text-aviva-text-muted hover:text-red-500 transition-all sm:opacity-0 sm:group-hover:opacity-100"
+          title="Eliminar de la lista"
+        >
+          <Trash2 size={18} />
+        </button>
+      )}
+    </div>
+  )
+}
+
 export default function PlaylistDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params)
   const { data: session } = useSession()
   const router = useRouter()
   const { showToast } = useToast()
-  
+
   const [playlist, setPlaylist] = useState<Playlist | null>(null)
   const [loading, setLoading] = useState(true)
   const [showShareModal, setShowShareModal] = useState(false)
@@ -77,11 +197,29 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
   const [availableSongs, setAvailableSongs] = useState<Song[]>([])
   const [shareEmail, setShareEmail] = useState('')
   const [shareCanEdit, setShareCanEdit] = useState(true)
-  
+
+  // DnD sensors with touch support
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 200,
+        tolerance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
+
   useEffect(() => {
     fetchPlaylist()
   }, [resolvedParams.id])
-  
+
   async function fetchPlaylist() {
     try {
       const res = await fetch(`/api/playlists/${resolvedParams.id}`)
@@ -97,7 +235,7 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
       setLoading(false)
     }
   }
-  
+
   async function fetchAvailableSongs() {
     try {
       const res = await fetch('/api/songs')
@@ -111,7 +249,7 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
       console.error('Error:', error)
     }
   }
-  
+
   async function addSongToPlaylist(songId: string) {
     try {
       const res = await fetch(`/api/playlists/${playlist?.id}/songs`, {
@@ -119,7 +257,7 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ songId }),
       })
-      
+
       if (res.ok) {
         const newSong = await res.json()
         setPlaylist(prev => prev ? {
@@ -133,7 +271,7 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
       showToast('Error al agregar canción', 'error')
     }
   }
-  
+
   async function removeSongFromPlaylist(songId: string) {
     try {
       const res = await fetch(`/api/playlists/${playlist?.id}/songs`, {
@@ -141,7 +279,7 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ songId }),
       })
-      
+
       if (res.ok) {
         setPlaylist(prev => prev ? {
           ...prev,
@@ -153,13 +291,50 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
       showToast('Error al eliminar canción', 'error')
     }
   }
-  
+
+  async function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+
+    if (!over || active.id === over.id || !playlist) {
+      return
+    }
+
+    const oldIndex = playlist.songs.findIndex(s => s.id === active.id)
+    const newIndex = playlist.songs.findIndex(s => s.id === over.id)
+
+    const newSongs = arrayMove(playlist.songs, oldIndex, newIndex)
+
+    // Optimistic update
+    setPlaylist(prev => prev ? { ...prev, songs: newSongs } : null)
+
+    // Update order in the backend
+    try {
+      // Update each song's order
+      await Promise.all(
+        newSongs.map((song, index) =>
+          fetch(`/api/playlists/${playlist.id}/songs`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              songId: song.songId,
+              order: index
+            }),
+          })
+        )
+      )
+    } catch (error) {
+      // Revert on error
+      showToast('Error al reordenar', 'error')
+      fetchPlaylist()
+    }
+  }
+
   async function shareWithUser() {
     if (!shareEmail.trim()) {
       showToast('Ingresa un email', 'warning')
       return
     }
-    
+
     try {
       const res = await fetch('/api/playlists/share', {
         method: 'POST',
@@ -170,7 +345,7 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
           canEdit: shareCanEdit,
         }),
       })
-      
+
       if (res.ok) {
         showToast('Lista compartida exitosamente', 'success')
         setShareEmail('')
@@ -183,7 +358,7 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
       showToast('Error al compartir', 'error')
     }
   }
-  
+
   async function removeShare(userId: string) {
     try {
       const res = await fetch('/api/playlists/share', {
@@ -194,7 +369,7 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
           userId,
         }),
       })
-      
+
       if (res.ok) {
         setPlaylist(prev => prev ? {
           ...prev,
@@ -206,13 +381,13 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
       showToast('Error', 'error')
     }
   }
-  
+
   function copyShareCode() {
     if (!playlist?.shareCode) return
     navigator.clipboard.writeText(playlist.shareCode)
     showToast('Código copiado', 'success')
   }
-  
+
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-6">
@@ -226,9 +401,9 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
       </div>
     )
   }
-  
+
   if (!playlist) return null
-  
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
       {/* Back Button */}
@@ -239,7 +414,7 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
         <ArrowLeft size={20} />
         <span>Volver</span>
       </button>
-      
+
       {/* Playlist Header */}
       <div className="bg-aviva-dark-lighter border border-aviva-gray rounded-2xl p-6 mb-6">
         <div className="flex flex-col sm:flex-row items-start gap-4">
@@ -263,7 +438,7 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
               </div>
             )}
           </div>
-          
+
           <div className="flex-1">
             <h1 className="text-2xl font-bold mb-1">{playlist.name}</h1>
             {playlist.description && (
@@ -279,7 +454,7 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
               )}
             </div>
           </div>
-          
+
           {/* Actions */}
           <div className="flex flex-wrap gap-2 w-full sm:w-auto">
             {playlist.songs.length > 0 && (
@@ -323,14 +498,14 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
             )}
           </div>
         </div>
-        
+
         {/* Shared Users */}
         {playlist.isOwner && playlist.sharedWithUsers.length > 0 && (
           <div className="mt-4 pt-4 border-t border-aviva-gray">
             <p className="text-sm text-aviva-text-muted mb-2">Compartida con:</p>
             <div className="flex flex-wrap gap-2">
               {playlist.sharedWithUsers.map(share => (
-                <div 
+                <div
                   key={share.user.id}
                   className="flex items-center gap-2 bg-aviva-gray rounded-full pl-1 pr-3 py-1"
                 >
@@ -354,20 +529,39 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
           </div>
         )}
       </div>
-      
-      {/* Songs List */}
+
+      {/* Reorder hint */}
+      {playlist.canEdit && playlist.songs.length > 1 && (
+        <p className="text-xs text-aviva-text-muted mb-2 flex items-center gap-1">
+          <GripVertical size={14} />
+          Arrastra para reordenar las canciones
+        </p>
+      )}
+
+      {/* Songs List with Drag and Drop */}
       <div className="space-y-1">
         {playlist.songs.length > 0 ? (
-          playlist.songs.map((ps, index) => (
-            <SongCardCompact
-              key={ps.id}
-              song={ps.song}
-              index={index}
-              customKey={ps.customKey || undefined}
-              onRemove={playlist.canEdit ? () => removeSongFromPlaylist(ps.songId) : undefined}
-              playlistId={playlist.id}
-            />
-          ))
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={playlist.songs.map(s => s.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              {playlist.songs.map((ps, index) => (
+                <SortableSongItem
+                  key={ps.id}
+                  playlistSong={ps}
+                  index={index}
+                  onRemove={playlist.canEdit ? () => removeSongFromPlaylist(ps.songId) : undefined}
+                  playlistId={playlist.id}
+                  canEdit={playlist.canEdit}
+                />
+              ))}
+            </SortableContext>
+          </DndContext>
         ) : (
           <div className="text-center py-16">
             <Music className="mx-auto mb-4 text-aviva-text-muted" size={48} />
@@ -388,7 +582,7 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
           </div>
         )}
       </div>
-      
+
       {/* Add Song Modal */}
       <Modal
         isOpen={showAddSongModal}
@@ -429,7 +623,7 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
           )}
         </div>
       </Modal>
-      
+
       {/* Share Modal */}
       <Modal
         isOpen={showShareModal}
@@ -452,7 +646,7 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
               </button>
             </div>
           </div>
-          
+
           {/* Share by Email */}
           <div>
             <p className="text-sm text-aviva-text-muted mb-2">O comparte por email:</p>
@@ -473,7 +667,7 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
               Permitir editar la lista
             </label>
           </div>
-          
+
           <button
             onClick={shareWithUser}
             className="btn-primary w-full"
@@ -485,4 +679,3 @@ export default function PlaylistDetailPage({ params }: { params: Promise<{ id: s
     </div>
   )
 }
-
